@@ -56,10 +56,10 @@ function Profile() {
           <div
   className="w-[130px] h-[130px] rounded-full bg-blue-500 flex items-center justify-center text-white font-bold  text-5xl mx-auto"
 >
-  {user?.name?.charAt(0).toUpperCase()}
+  {user?.firstname?.charAt(0).toUpperCase()}
 </div>
             <div className="mt-4 text-xl font-bold">
-              {user ? user.name : "Guest"}
+              {user ? `${user.lastname} ${user.firstname}` : "Guest"}
             </div>
             <button className="button2">
               Tải ảnh mới
@@ -74,7 +74,7 @@ function Profile() {
               id="studentId"
               className="w-full p-3 rounded-md border border-gray-300"
             >
-              {user ? user.mssv : "N/A"}
+              {user ? user.MSSV : "N/A"}
             </div>
           </div>
 

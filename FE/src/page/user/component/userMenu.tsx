@@ -27,7 +27,7 @@ function UserMenu() {
       >
         <div className="flex flex-col justify-center items-end">
           <div className="text-xs sm:text-sm md:text-sm lg:text-sm xl:text-base font-medium">
-            {user.username}
+            {user.lastname} {user.firstname}
           </div>
           <div>{user.isAdmin ? "Admin" : "User"}</div>
         </div>
@@ -42,9 +42,9 @@ function UserMenu() {
           {/* Avatar + name */}
           <div className="flex items-center mb-4">
             <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-              {user.username.charAt(0).toUpperCase()}
+              {user.firstname.charAt(0).toUpperCase()}
             </div>
-            <div className="ml-3 text-lg font-semibold">{user.username}</div>
+            <div className="ml-3 text-lg font-semibold">{user.lastname} {user.firstname}</div>
           </div>
 
           <hr className="mb-3" />
