@@ -1,5 +1,4 @@
 import BannerImg from "../../../assets/images/Banner_Home.png";
-import { IoIosSearch } from "react-icons/io";
 import { Link } from "react-router-dom";
 
 function Banner() {

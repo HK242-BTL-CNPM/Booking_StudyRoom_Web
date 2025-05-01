@@ -2,10 +2,32 @@ import Sidebar from "../components/sidebar";
 import Header_admin from "../components/header_admin";
 import { useState } from "react";
 import { roomStatusColor, rooms, bookingStatusColor } from "./const_room";
-import { FaSort, FaCaretDown, FaInfoCircle } from "react-icons/fa"; // Import icon sắp xếp
+import { FaSort, FaInfoCircle } from "react-icons/fa"; // Import icon sắp xếp
+import Select from "react-select"; // Import Select component
+import { csOptions, toaOptionsByCs } from "./Options";
 
 import "react-datepicker/dist/react-datepicker.css";
-function User() {
+
+
+
+// Define custom styles for react-select
+const customStyles = {
+  placeholder: (provided: any) => ({
+    ...provided,
+    color: "#1D4ED8",
+    fontWeight: 500,
+  }),
+  menu: (provided: any) => ({
+    ...provided,
+    zIndex: 9999,
+  }),
+  control: (provided: any) => ({
+    ...provided,
+    borderRadius: 8,
+    padding: "2px 4px",
+  }),
+};
+function Room() {
   // sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -14,7 +36,6 @@ function User() {
   };
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: string } | null>(null);
 
-  const [roomsList] = useState(rooms);
 
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
@@ -28,8 +49,24 @@ function User() {
     setSortConfig({ key, direction });
   };
 
+  const [selectedCs, setSelectedCs] = useState<string | null>(null);
+  const [selectedToa, setSelectedToa] = useState<string | null>(null);
+  const toaOptions = selectedCs ? toaOptionsByCs[selectedCs] : [];
 
-  const sortedDevices = [...roomsList].sort((a, b) => {
+  const filterRooms = () => { 
+    let filteredRooms = rooms;
+    
+    if (selectedToa) {
+      filteredRooms = filteredRooms.filter((room) =>
+        room.roomNumber.startsWith(selectedToa)
+      );
+    }
+    return filteredRooms;
+  };
+  
+  const filteredRooms = filterRooms();
+  
+  const sortedDevices = [...filteredRooms].sort((a, b) => {
     if (!sortConfig) return 0;
     const { key, direction } = sortConfig;
     const order = direction === "asc" ? 1 : -1;
@@ -43,6 +80,19 @@ function User() {
     (currentPage - 1) * entriesPerPage,
     currentPage * entriesPerPage
   );
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<any>(null);
+
+  const openPopup = (room: any) => {
+    setSelectedRoom(room); // Lưu thông tin phòng được chọn
+    setIsPopupOpen(true); // Hiển thị popup
+  };
+  
+  const closePopup = () => {
+    setIsPopupOpen(false); // Đóng popup
+    setSelectedRoom(null); // Xóa thông tin phòng
+  };
 
   return (
     <>
@@ -65,19 +115,31 @@ function User() {
                 <h1 className="text-2xl font-bold ">Danh sách phòng</h1>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 justify-end">
-                <button className="buttondrop">
-                  Cơ sở <FaCaretDown style={{ marginLeft: "5px" }} />
-                </button>
-
-                <button className="buttondrop">
-                  Tòa <FaCaretDown style={{ marginLeft: "5px" }} />
-                </button>
-
-                <button className="buttondrop">
-                  Phòng <FaCaretDown style={{ marginLeft: "5px" }} />
-                </button>
-              </div>
+              <div className="flex flex-row flex-wrap gap-3 justify-end px-16 pt-4">
+            <Select
+              className="w-36"
+              styles={customStyles}
+              placeholder="Cơ sở"
+              options={csOptions}
+              value={csOptions.find((c: { value: string }) => c.value === selectedCs) || null}
+              onChange={(option) => {
+                setSelectedCs(option?.value || null);
+                setSelectedToa(null);
+              }}
+            />
+            <Select
+              className="w-36"
+              styles={customStyles}
+              placeholder="Toà"
+              options={toaOptions}
+              value={toaOptions.find((t: { value: string }) => t.value === selectedToa) || null}
+              isDisabled={!selectedCs}
+              onChange={(option) => {
+                setSelectedToa(option?.value || null);
+              }}
+            />
+            
+          </div>
 
 
             </div>
@@ -91,8 +153,20 @@ function User() {
               {/* --- Table Column --- */}
               <div className="flex-grow flex flex-col  ">
                 {/* Header của bảng */}
-                <div className="grid grid-cols-6  gap-4 p-4 h-16 text-sm font-semibold bg-[#F8FAFC] rounded-t-lg border border-gray-300 text-gray-600 items-center">
+                <div className="grid grid-cols-8  gap-4 p-4 h-16 text-sm font-semibold bg-[#F8FAFC] rounded-t-lg border border-gray-300 text-gray-600 items-center">
                   <div className="text-center">Tên ID</div>
+                  <div
+                    onClick={() => handleSort("cs")}
+                    className="cursor-pointer flex items-center justify-center"
+                  >
+                    Cơ sở <FaSort className="ml-2" />
+                  </div>
+                  <div
+                    onClick={() => handleSort("toa")}
+                    className="cursor-pointer flex items-center justify-center"
+                  >
+                    Tòa <FaSort className="ml-2" />
+                  </div>
                   <div
                     onClick={() => handleSort("roomNumber")}
                     className="cursor-pointer flex items-center justify-center"
@@ -125,12 +199,12 @@ function User() {
                   {paginatedDevices.map((room) => (
                     <div
                       key={room.id}
-                      className="grid grid-cols-6 gap-4 py-4 border-b last:border-b-0 items-center"
+                      className="grid grid-cols-8 gap-4 py-4 border-b last:border-b-0 items-center"
                     >
                       <div className="text-center font-medium">ID {room.id}</div>
+                      <div className="text-center">{room.cs}</div>
+                      <div className="text-center">{room.toa}</div>
                       <div className="text-center">{room.roomNumber}</div>
-
-                      
                       <div className="text-center">
                         <button
                           className={`px-2 py-1 rounded-md text-sm font-medium ${bookingStatusColor[room.bookingStatus as keyof typeof bookingStatusColor] || "bg-gray-300 text-black"
@@ -171,8 +245,11 @@ function User() {
                         >
                           Khóa phòng
                         </button>
-                        <FaInfoCircle className="ml-4 text-gray-500 text-xl cursor-pointer" title="Chi tiết" />
-
+                        <FaInfoCircle
+  className="ml-4 text-gray-500 text-xl cursor-pointer"
+  title="Chi tiết"
+  onClick={() => openPopup(room)} // Mở popup với thông tin phòng
+/>
                       </div>
                     </div>
                   ))}
@@ -227,8 +304,99 @@ function User() {
           </div>
         </div>
       </div >
+      {isPopupOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg ">
+      <h2 className="text-xl font-bold mb-4">Thông tin phòng</h2>
+      {selectedRoom && (
+  <div className="bg-white rounded-lg shadow-md p-6">
+    <h2 className="text-2xl font-bold mb-4">Phòng {selectedRoom.roomNumber}</h2>
+
+    <div className="border-t border-b py-4 mb-6">
+      <div className="grid grid-cols-5 gap-2 text-center">
+        
+        {/* LOẠI PHÒNG */}
+        <div>
+          
+          <div className="text-sm font-medium text-gray-500">Loại Phòng</div>
+          <div className="flex items-center">
+  <span className="inline-flex items-center justify-center w-3 h-10 bg-gray-100 rounded-full mr-3">
+    <i className="fas fa-users text-gray-600"></i> {/* Icon */}
+  </span>
+  <div className="text-base font-semibold">{selectedRoom.roomType || "Phòng họp nhóm"}</div> {/* Text */}
+</div></div>
+
+        {/* SỐ LƯỢNG */}
+        <div>
+          <div className="text-sm font-medium text-gray-500 mb-2">Số lượng</div>
+          <div className="text-base font-semibold">{selectedRoom.capacity || "4 người"}</div>
+        </div>
+
+        {/* PHÒNG */}
+        <div>
+          <div className="text-sm font-medium text-gray-500 mb-2">Phòng</div>
+          <div className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-full">
+            <i className="fas fa-map-marker-alt mr-2 text-gray-600"></i> 
+            {selectedRoom.roomNumber || "H6-123, CS2"}
+          </div>
+        </div>
+
+        {/* TRẠNG THÁI */}
+        <div>
+          <div className="text-sm font-medium text-gray-500 mb-2">Trạng thái</div>
+          <div className="inline-flex items-center">
+            <span className="w-2 h-2 mr-2 bg-green-500 rounded-full"></span>
+            <span className="text-green-500 font-semibold">{selectedRoom.roomStatus || "Trống"}</span>
+          </div>
+        </div>
+
+        {/* THỜI GIAN */}
+        <div>
+          <div className="text-sm font-medium text-gray-500 mb-2">Thời gian đặt phòng</div>
+          <div className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-full">
+            <i className="fas fa-clock mr-2 text-gray-600"></i> 
+            {selectedRoom.bookingTime || "11:00 - 12:00"}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {/* Danh sách thiết bị */}
+    <div className="text-sm font-medium text-gray-700 mb-2">Danh sách Thiết bị:</div>
+<div className="flex flex-wrap gap-4 text-gray-600">
+  {selectedRoom.devices?.map((device: string, idx: number) => (
+    <div key={idx} className="px-3 py-1 bg-gray-100 rounded-full">
+      {device}
+    </div>
+  )) || (
+    <>
+      <div className="px-3 py-1 bg-gray-100 rounded-full">2x Máy lạnh</div>
+      <div className="px-3 py-1 bg-gray-100 rounded-full">4x Đèn</div>
+      <div className="px-3 py-1 bg-gray-100 rounded-full">1x Máy chiếu</div>
+      <div className="px-3 py-1 bg-gray-100 rounded-full">8x Ổ cắm</div>
+      <div className="px-3 py-1 bg-gray-100 rounded-full">1x Màn hình</div>
+    </>
+  )}
+</div>
+
+
+  </div>
+)}
+
+      <div className="flex justify-center mt-4">
+        <button
+          className="button2"
+          onClick={closePopup}
+        >
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 }
 
-export default User;
+export default Room;

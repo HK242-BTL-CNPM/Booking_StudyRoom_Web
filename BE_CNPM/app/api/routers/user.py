@@ -22,6 +22,8 @@ from app.crud.crud_order import checkin_library, checkout_library,get_cancel_roo
 from app.crud.crud_report_noti import create_report, get_report, get_reports, update_report, delete_report
 from typing import List
 
+from app.crud.crud_room import  get_all_branches
+
 
 router = APIRouter()
 # router.include_router(
@@ -588,5 +590,19 @@ def get_all_noti(session: SessionDep, current_user: CurrentUser):
     }
 
 
+# bổ sung user
+@router.get("/all_branch", response_model=reponse)
+def get_all_branch_data(session: SessionDep):
+    '''
+    Get all branches.
+
+    '''
+    branches = get_all_branches(session)
+    if not branches:
+        raise HTTPException(status_code=404, detail="No branch found")
+    return {
+        "msg": "Get all branches successfully",
+        "data": branches
+    }
 
 

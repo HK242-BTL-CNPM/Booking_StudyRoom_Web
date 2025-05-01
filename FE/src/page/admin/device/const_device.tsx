@@ -5,6 +5,9 @@ export const devices = [
     devices: "Quạt",
     status: "Bình thường",
     activity: "Bật",
+    cs: "CS1", // Cơ sở 1
+    toa: "B1", // Tòa B1
+    roomNumber: "B1-02", // Số phòng
   },
   {
     id: 2,
@@ -12,6 +15,9 @@ export const devices = [
     devices: "Máy chiếu",
     status: "Bình thường",
     activity: "Tắt",
+    cs: "CS1",
+    toa: "B1",
+    roomNumber: "B1-03",
   },
   {
     id: 3,
@@ -19,6 +25,9 @@ export const devices = [
     devices: "Quạt",
     status: "Đang sửa chữa",
     activity: "Tắt",
+    cs: "CS1",
+    toa: "B3",
+    roomNumber: "B3-02",
   },
   {
     id: 4,
@@ -26,6 +35,9 @@ export const devices = [
     devices: "Máy chiếu",
     status: "Bình thường",
     activity: "Bật",
+    cs: "CS1",
+    toa: "B3",
+    roomNumber: "B3-03",
   },
   {
     id: 5,
@@ -33,6 +45,9 @@ export const devices = [
     devices: "Quạt",
     status: "Bình thường",
     activity: "Tắt",
+    cs: "CS2",
+    toa: "H1",
+    roomNumber: "H1-02",
   },
   {
     id: 6,
@@ -40,6 +55,9 @@ export const devices = [
     devices: "TV",
     status: "Đang sửa chữa",
     activity: "Tắt",
+    cs: "CS2",
+    toa: "H1",
+    roomNumber: "H1-03",
   },
   {
     id: 7,
@@ -47,6 +65,9 @@ export const devices = [
     devices: "Máy chiếu",
     status: "Lỗi",
     activity: "Tắt",
+    cs: "CS2",
+    toa: "H3",
+    roomNumber: "H3-02",
   },
   {
     id: 8,
@@ -54,9 +75,11 @@ export const devices = [
     devices: "TV",
     status: "Bình thường",
     activity: "Tắt",
+    cs: "CS2",
+    toa: "H3",
+    roomNumber: "H3-03",
   },
 ];
-
 export const deviceStatuses = [
   "Tất cả",
   "Bình thường",
