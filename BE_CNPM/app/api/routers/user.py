@@ -23,6 +23,8 @@ from app.crud.crud_report_noti import create_report, get_report, get_reports, up
 from typing import List
 
 from app.crud.crud_room import  get_all_branches
+from app.crud.crud_room import get_buildings_by_branch
+from app.crud.crud_room import get_room_type,get_all_rt
 
 
 router = APIRouter()
@@ -605,4 +607,33 @@ def get_all_branch_data(session: SessionDep):
         "data": branches
     }
 
+@router.get("/all_building1", response_model=reponse)
+def get_all_building_data(session: SessionDep, branch_id: int):
+    '''
+    Get all buildings by branch ID.
 
+    Args:
+        branch_id: ID of the branch to filter buildings.
+    '''
+    buildings = get_buildings_by_branch(session, branch_id, None)
+    if not buildings:
+        raise HTTPException(status_code=404, detail="No building found")
+    return {
+        "msg": "Get all buildings successfully",
+        "data": buildings
+    }
+
+
+@router.get("/all_room_type", response_model=reponse)
+def get_all_room_type(session: SessionDep):
+    '''
+    Get all room types.
+
+    '''
+    room_types = get_all_rt(session)
+    if not room_types:
+        raise HTTPException(status_code=404, detail="No room type found")
+    return {
+        "msg": "Get all room types successfully",
+        "data": room_types
+    }
