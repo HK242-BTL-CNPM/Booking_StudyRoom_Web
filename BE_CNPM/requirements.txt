@@ -1,0 +1,12 @@
+fastapi
+sqlmodel
+sqlalchemy
+pydantic[email]
+python-jose[cryptography]
+passlib[bcrypt]
+email-validator
+PyJWT
+pydantic-settings
+uvicorn
+beautifulsoup4
+pymysql

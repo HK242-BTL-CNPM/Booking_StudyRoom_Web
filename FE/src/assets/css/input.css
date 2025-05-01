@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.button1 {
+  @apply h-16 font-Roboto font-semibold rounded-lg bg-dark_blue text-white text-lg  py-1 px-12 hover:scale-105 transition duration-300;
+}
+
+.button2 {
+  @apply h-10 font-Roboto font-medium rounded-lg bg-light_blue text-dark_blue text-xs  py-1 px-12;
+}
+
+.button3 {
+  @apply h-10 font-Roboto font-medium rounded-lg bg-light_red text-white text-xs  py-1 px-12;
+}
+
+.button4 {
+  @apply h-8 font-Roboto font-semibold rounded-lg bg-dark_blue text-white text-base px-2 py-1 hover:scale-105 transition duration-300;
+}
+.state1 {
+  @apply h-8 font-Roboto font-medium rounded-lg bg-light_pink text-dark_pink text-xs  py-1 px-4;
+}
+
+.state2 {
+  @apply h-8 font-Roboto font-medium rounded-lg bg-light_blue text-dark_blue text-xs  py-1 px-4;
+}
+
+.state3 {
+  @apply h-8 font-Roboto font-medium rounded-lg bg-light_green text-dark_green text-xs  py-1 px-4;
+}
+
+.buttondrop {
+  @apply h-8 font-Roboto font-semibold rounded-lg bg-dark_blue text-white text-base px-2 py-1 hover:scale-105 transition duration-300;
+}
