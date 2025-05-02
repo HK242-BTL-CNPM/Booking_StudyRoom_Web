@@ -232,6 +232,7 @@ function Book() {
             onStartDateChange={setStartDate}
             onStartTimeChange={setStartTime}
             onEndTimeChange={setEndTime}
+            onBuildingsChange={setBuildings} // Added missing prop
             onSearch={handleSearch} // Handler khi nút tìm kiếm được bấm
           />
 
@@ -256,3 +257,5 @@ function Book() {
 }
 
 export default Book;
+
+
