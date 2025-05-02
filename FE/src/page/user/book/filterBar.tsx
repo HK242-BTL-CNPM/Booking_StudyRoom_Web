@@ -1,7 +1,8 @@
-// // src/pages/user/book/FilterBar.tsx
-// import React from "react";
+// import React, { useState, useEffect } from "react";
 // import { FaSearch } from "react-icons/fa";
-// import { Axios } from "axios";
+// import { useAuth } from "../../../AuthContext";
+// import { useNavigate } from "react-router-dom";
+// import { fetchBuildings } from "../../../api/apiService";
 
 // interface FilterBarProps {
 //   selectedFacility: string;
@@ -12,6 +13,7 @@
 //   startTime: string;
 //   endTime: string;
 //   onFacilityChange: (value: string) => void;
+//   onBuildingsChange: (value: string[]) => void;
 //   onBuildingChange: (value: string) => void;
 //   onRoomTypeChange: (value: string) => void;
 //   onStartDateChange: (value: string) => void;
@@ -20,7 +22,7 @@
 //   onSearch: () => void;
 // }
 
-// // --- Style Objects (Copied from original, consider moving to CSS/SCSS) ---
+// // --- Style Objects ---
 // const filterContainerStyle: React.CSSProperties = {
 //   background: "linear-gradient(90deg, #395799, #5F91FF)",
 //   padding: "18px",
@@ -31,17 +33,17 @@
 
 // const filterGridStyle: React.CSSProperties = {
 //   display: "grid",
-//   gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", // Responsive grid
+//   gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
 //   gap: "15px",
-//   alignItems: "end", // Align items to bottom for better look with labels
+//   alignItems: "end",
 // };
 
 // const filterLabelStyle: React.CSSProperties = {
-//   fontSize: "14px", // Slightly smaller for better fit
+//   fontSize: "14px",
 //   color: "#fff",
 //   fontWeight: "bold",
-//   marginBottom: "5px", // Add space below label
-//   textAlign: "left", // Align labels left
+//   marginBottom: "5px",
+//   textAlign: "left",
 // };
 
 // const filterControlBaseStyle: React.CSSProperties = {
@@ -49,13 +51,14 @@
 //   fontSize: "16px",
 //   borderRadius: "8px",
 //   border: "none",
-//   width: "100%", // Make controls fill grid cell
+//   width: "100%",
 //   height: "40px",
 //   boxSizing: "border-box",
 // };
+
 // const filterDateInputStyle: React.CSSProperties = {
 //   ...filterControlBaseStyle,
-//   padding: "8px 10px", // Keep specific padding
+//   padding: "8px 10px",
 // };
 
 // const searchButtonStyle: React.CSSProperties = {
@@ -70,9 +73,14 @@
 //   alignItems: "center",
 //   justifyContent: "center",
 //   height: "40px",
-//   width: "100%", // Make button fill grid cell
+//   width: "100%",
 // };
 // // --- End Style Objects ---
+
+// interface Facility {
+//   branch_name: string;
+//   id: number;
+// }
 
 // const FilterBar: React.FC<FilterBarProps> = ({
 //   selectedFacility,
@@ -83,6 +91,7 @@
 //   startTime,
 //   endTime,
 //   onFacilityChange,
+//   onBuildingsChange,
 //   onBuildingChange,
 //   onRoomTypeChange,
 //   onStartDateChange,
@@ -90,27 +99,46 @@
 //   onEndTimeChange,
 //   onSearch,
 // }) => {
+//   const { user, token, isAuthenticated, facilities } = useAuth();
+//   const navigate = useNavigate();
+//   const [loading, setLoading] = useState<boolean>(true);
+//   const [error, setError] = useState<string | null>(null);
+
+//   useEffect(() => {
+//     if (!user || !token || !isAuthenticated) {
+//       setLoading(false);
+//       setError("Vui lòng đăng nhập để xem danh sách cơ sở.");
+//       navigate("/login");
+//       return;
+//     }
+
+//     if (facilities.length > 0) {
+//       setLoading(false);
+//     } else {
+//       setLoading(false);
+//       setError("Không có dữ liệu cơ sở.");
+//     }
+//   }, [user, token, isAuthenticated, facilities, navigate]);
+
 //   const handleStartTimeUpdate = (value: string) => {
 //     const hour = parseInt(value.split(":")[0], 10);
 //     const formattedTime = `${hour.toString().padStart(2, "0")}:00`;
 //     onStartTimeChange(formattedTime);
 
-//     // Logic reset endTime nếu không hợp lệ (giữ nguyên)
 //     if (endTime) {
 //       const endHour = parseInt(endTime.split(":")[0], 10);
 //       if (endHour <= hour) {
-//         onEndTimeChange(""); // Reset endTime về rỗng -> "Chọn giờ" sẽ hiện lại
+//         onEndTimeChange("");
 //       }
 //     }
 //   };
 
-//   const startHourInt = parseInt(startTime.split(":")[0] || "6", 10);
+//   const handleFacilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+//     const newFacility = event.target.value;
+//     onFacilityChange(newFacility);
+//   };
 
-//   const facilities = [
-//     { label: "Tất cả", value: "Tất cả" },
-//     { label: "Cơ sở 1", value: "CS1" },
-//     { label: "Cơ sở 2", value: "CS2" },
-//   ];
+//   const startHourInt = parseInt(startTime.split(":")[0] || "6", 10);
 
 //   return (
 //     <div style={filterContainerStyle}>
@@ -121,15 +149,25 @@
 //           <select
 //             style={filterControlBaseStyle}
 //             value={selectedFacility}
-//             onChange={(e) => {
-//               onFacilityChange(e.target.value);
-//             }}
+//             onChange={handleFacilityChange}
+//             disabled={loading || !!error}
 //           >
-//             {facilities.map((f, idx) => (
-//               <option key={idx} value={f.value}>
-//                 {f.label}
+//             <option value="Tất cả">Tất cả</option>
+//             {loading ? (
+//               <option value="" disabled>
+//                 Đang tải...
 //               </option>
-//             ))}
+//             ) : error ? (
+//               <option value="" disabled>
+//                 {error}
+//               </option>
+//             ) : (
+//               facilities.map((f) => (
+//                 <option key={f.id} value={f.branch_name}>
+//                   {f.branch_name}
+//                 </option>
+//               ))
+//             )}
 //           </select>
 //         </div>
 //         {/* Building */}
@@ -155,10 +193,10 @@
 //             value={selectedRoomType}
 //             onChange={(e) => onRoomTypeChange(e.target.value)}
 //           >
-//             <option value="Tất cả">Tất cả</option>{" "}
-//             <option value="Phòng tự học">Phòng tự học</option>{" "}
-//             <option value="Phòng thuyết trình">Phòng thuyết trình</option>{" "}
-//             <option value="Phòng họp nhóm">Phòng họp nhóm</option>{" "}
+//             <option value="Tất cả">Tất cả</option>
+//             <option value="Phòng tự học">Phòng tự học</option>
+//             <option value="Phòng thuyết trình">Phòng thuyết trình</option>
+//             <option value="Phòng họp nhóm">Phòng họp nhóm</option>
 //             <option value="Phòng mentor 1-1">Phòng mentor 1-1</option>
 //           </select>
 //         </div>
@@ -186,26 +224,23 @@
 //           <div style={filterLabelStyle}>Kết thúc</div>
 //           <select
 //             style={filterControlBaseStyle}
-//             value={endTime} // Vẫn bind value vào state endTime
+//             value={endTime}
 //             onChange={(e) => onEndTimeChange(e.target.value)}
-//             disabled={!startTime} // Vẫn disable nếu chưa chọn start time
-//             required // Thêm required để form validation (nếu có)
+//             disabled={!startTime}
+//             required
 //           >
-//             {/* CHỈ HIỂN THỊ "Chọn giờ" NẾU endTime LÀ RỖNG */}
 //             {!endTime && (
 //               <option value="" disabled hidden>
-//                 {" "}
 //                 Chọn giờ
 //               </option>
 //             )}
-//             {/* Render các giờ hợp lệ */}
 //             {Array.from({ length: 15 }, (_, i) => {
 //               const hour = 7 + i;
 //               const hourStr = hour.toString().padStart(2, "0");
 //               const isDisabled = hour <= startHourInt;
 //               return (
 //                 <option
-//                   key={`end-${hour}`} // Key rõ ràng hơn
+//                   key={`end-${hour}`}
 //                   value={`${hourStr}:00`}
 //                   disabled={isDisabled}
 //                   style={{ color: isDisabled ? "#ccc" : "#000" }}
@@ -234,9 +269,8 @@
 //           </div>
 //           <button
 //             style={searchButtonStyle}
-//             onClick={onSearch} // Gọi handler khi bấm nút
+//             onClick={onSearch}
 //             title="Tìm kiếm phòng"
-//             // disabled={!startDate || !startTime || !endTime} // Disable nếu chưa chọn ngày hoặc giờ
 //           >
 //             <FaSearch size={20} />
 //           </button>
@@ -253,6 +287,7 @@ import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useAuth } from "../../../AuthContext";
 import { useNavigate } from "react-router-dom";
+import { fetchBuildings } from "../../../api/apiService";
 
 interface FilterBarProps {
   selectedFacility: string;
@@ -332,6 +367,12 @@ interface Facility {
   id: number;
 }
 
+interface Building {
+  id: number;
+  building_name: string;
+  branch_id: number;
+}
+
 const FilterBar: React.FC<FilterBarProps> = ({
   selectedFacility,
   buildings,
@@ -353,6 +394,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [buildingLoading, setBuildingLoading] = useState<boolean>(false); // Thêm trạng thái tải building
+  const [buildingError, setBuildingError] = useState<string | null>(null); // Thêm trạng thái lỗi building
 
   useEffect(() => {
     if (!user || !token || !isAuthenticated) {
@@ -369,6 +412,39 @@ const FilterBar: React.FC<FilterBarProps> = ({
       setError("Không có dữ liệu cơ sở.");
     }
   }, [user, token, isAuthenticated, facilities, navigate]);
+
+  // Gọi API để lấy danh sách building khi selectedFacility thay đổi
+  useEffect(() => {
+    const fetchBuildingData = async () => {
+      if (selectedFacility === "Tất cả") {
+        onBuildingsChange(["Tất cả"]);
+        setBuildingError(null);
+        return;
+      }
+
+      const selectedBranch = facilities.find((f) => f.branch_name === selectedFacility);
+      if (!selectedBranch) {
+        onBuildingsChange(["Tất cả"]);
+        setBuildingError("Cơ sở không hợp lệ.");
+        return;
+      }
+
+      setBuildingLoading(true);
+      setBuildingError(null);
+      try {
+        const buildingData = await fetchBuildings(selectedBranch.id);
+        const buildingNames = ["Tất cả", ...buildingData.map((b) => b.building_name)];
+        onBuildingsChange(buildingNames);
+      } catch (error) {
+        setBuildingError("Không thể tải danh sách tòa nhà.");
+        onBuildingsChange(["Tất cả"]);
+      } finally {
+        setBuildingLoading(false);
+      }
+    };
+
+    fetchBuildingData();
+  }, [selectedFacility, facilities, onBuildingsChange]);
 
   const handleStartTimeUpdate = (value: string) => {
     const hour = parseInt(value.split(":")[0], 10);
@@ -394,9 +470,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           <select
             style={filterControlBaseStyle}
             value={selectedFacility}
-            onChange={(e) => {
-              onFacilityChange(e.target.value);
-            }}
+            onChange={(e) => onFacilityChange(e.target.value)}
             disabled={loading || !!error}
           >
             <option value="Tất cả">Tất cả</option>
@@ -424,12 +498,23 @@ const FilterBar: React.FC<FilterBarProps> = ({
             style={filterControlBaseStyle}
             value={selectedBuilding}
             onChange={(e) => onBuildingChange(e.target.value)}
+            disabled={buildingLoading || !!buildingError}
           >
-            {buildings.map((b, i) => (
-              <option key={i} value={b}>
-                {b}
+            {buildingLoading ? (
+              <option value="" disabled>
+                Đang tải...
               </option>
-            ))}
+            ) : buildingError ? (
+              <option value="" disabled>
+                {buildingError}
+              </option>
+            ) : (
+              buildings.map((b, i) => (
+                <option key={i} value={b}>
+                  {b}
+                </option>
+              ))
+            )}
           </select>
         </div>
         {/* Room Type */}
@@ -528,5 +613,3 @@ const FilterBar: React.FC<FilterBarProps> = ({
 };
 
 export default FilterBar;
-
-
