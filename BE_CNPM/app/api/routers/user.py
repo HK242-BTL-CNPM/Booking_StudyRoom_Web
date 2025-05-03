@@ -25,6 +25,8 @@ from typing import List
 from app.crud.crud_room import  get_all_branches
 from app.crud.crud_room import get_buildings_by_branch
 from app.crud.crud_room import get_room_type,get_all_rt
+from app.crud.crud_room import get_room_type,get_all_rt
+from app.crud.crud_room import create_room, get_room, update_room, delete_room, delete_room_device,filter_rooms
 
 
 router = APIRouter()
@@ -636,4 +638,20 @@ def get_all_room_type(session: SessionDep):
     return {
         "msg": "Get all room types successfully",
         "data": room_types
+    }
+
+@router.get("/room1/{room_id}", response_model=reponse)
+def get_room_data(room_id: int, session: SessionDep):
+    '''
+    Get a room by ID.
+
+    Args:
+        room_id: ID of the room to retrieve.
+    '''
+    room = get_room(session, room_id, None)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return {
+        "msg": "Get room successfully",
+        "data": room
     }

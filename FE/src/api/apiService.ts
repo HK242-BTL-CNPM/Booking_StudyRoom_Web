@@ -76,6 +76,12 @@ interface GetAllOrderResponse {
   data: Order[];
 }
 
+interface GetRoomResponse {
+  msg: string;
+  data: RoomFromApi;
+  metadata: null;
+}
+
 export const fetchInitialData = async (): Promise<ApiResponse> => {
   try {
     const [userResponse, facilitiesResponse] = await Promise.all([
@@ -112,6 +118,17 @@ export const fetchRoomTypes = async (): Promise<RoomType[]> => {
     return response.data.data || [];
   } catch (error: any) {
     console.error('Error fetching room types:', error);
+    throw error;
+  }
+};
+
+// Thêm hàm mới để lấy thông tin phòng dựa trên room_id
+export const fetchRoomById = async (roomId: number): Promise<RoomFromApi> => {
+  try {
+    const response = await api.get(`/api/v1/user/room1/${roomId}`);
+    return response.data.data || {};
+  } catch (error: any) {
+    console.error(`Error fetching room with ID ${roomId}:`, error);
     throw error;
   }
 };
