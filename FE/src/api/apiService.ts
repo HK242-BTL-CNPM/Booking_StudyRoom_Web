@@ -24,6 +24,12 @@ interface Building {
   branch_id: number;
 }
 
+interface RoomType {
+  id: number;
+  type_name: string;
+  max_capacity: number | null;
+}
+
 interface ApiResponse {
   user: User | null;
   facilities: Facility[];
@@ -31,13 +37,11 @@ interface ApiResponse {
 
 export const fetchInitialData = async (): Promise<ApiResponse> => {
   try {
-    // Gọi đồng thời các API bằng Promise.all
     const [userResponse, facilitiesResponse] = await Promise.all([
-      api.get('/api/v1/user/me'), // Lấy thông tin user
-      api.get('/api/v1/user/all_branch'), // Lấy danh sách cơ sở
+      api.get('/api/v1/user/me'),
+      api.get('/api/v1/user/all_branch'),
     ]);
 
-    // Xử lý dữ liệu
     const user = userResponse.data?.data || null;
     const facilities = Array.isArray(facilitiesResponse.data?.data) ? facilitiesResponse.data.data : [];
 
@@ -47,16 +51,26 @@ export const fetchInitialData = async (): Promise<ApiResponse> => {
     };
   } catch (error: any) {
     console.error('Error fetching initial data:', error);
-    throw error; // Ném lỗi để AuthContext xử lý
+    throw error;
   }
 };
 
 export const fetchBuildings = async (branchId: number): Promise<Building[]> => {
   try {
-    const response = await api.get(`/api/v1/user/all_building1?branch_id=${branchId}`);
+    const response = await api.get(`/api/v1/user/all_building1?branch_id=${branchId}`); // Sửa endpoint thành đúng giá trị
     return response.data.data || [];
   } catch (error: any) {
     console.error(`Error fetching buildings for branch_id ${branchId}:`, error);
+    throw error;
+  }
+};
+
+export const fetchRoomTypes = async (): Promise<RoomType[]> => {
+  try {
+    const response = await api.get('/api/v1/user/all_room_type');
+    return response.data.data || [];
+  } catch (error: any) {
+    console.error('Error fetching room types:', error);
     throw error;
   }
 };
