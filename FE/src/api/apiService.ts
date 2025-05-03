@@ -60,6 +60,22 @@ interface OrderRoomResponse {
   };
 }
 
+interface Order {
+  id: number;
+  date: string;
+  end: string;
+  is_cancel: boolean;
+  room_id: number;
+  user_id: number;
+  begin: string;
+  is_used: boolean;
+}
+
+interface GetAllOrderResponse {
+  msg: string;
+  data: Order[];
+}
+
 export const fetchInitialData = async (): Promise<ApiResponse> => {
   try {
     const [userResponse, facilitiesResponse] = await Promise.all([
@@ -133,6 +149,16 @@ export const orderRoom = async (params: {
     return response.data;
   } catch (error: any) {
     console.error('Error ordering room:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAllOrders = async (): Promise<GetAllOrderResponse> => {
+  try {
+    const response = await api.get('/api/v1/user/getallorder');
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching all orders:', error.response?.data || error.message);
     throw error;
   }
 };
