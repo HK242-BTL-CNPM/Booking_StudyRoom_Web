@@ -30,6 +30,17 @@ interface RoomType {
   max_capacity: number | null;
 }
 
+interface RoomFromApi {
+  branch_id: number;
+  building_id: number;
+  no_room: string;
+  quantity: number;
+  id: number;
+  type_id: number;
+  max_quantity: number;
+  active: boolean;
+}
+
 interface ApiResponse {
   user: User | null;
   facilities: Facility[];
@@ -57,7 +68,7 @@ export const fetchInitialData = async (): Promise<ApiResponse> => {
 
 export const fetchBuildings = async (branchId: number): Promise<Building[]> => {
   try {
-    const response = await api.get(`/api/v1/user/all_building1?branch_id=${branchId}`); // Sửa endpoint thành đúng giá trị
+    const response = await api.get(`/api/v1/user/all_building1?branch_id=${branchId}`);
     return response.data.data || [];
   } catch (error: any) {
     console.error(`Error fetching buildings for branch_id ${branchId}:`, error);
@@ -71,6 +82,26 @@ export const fetchRoomTypes = async (): Promise<RoomType[]> => {
     return response.data.data || [];
   } catch (error: any) {
     console.error('Error fetching room types:', error);
+    throw error;
+  }
+};
+
+export const searchRooms = async (params: {
+  building_id: number;
+  branch_id: number;
+  type_id: number;
+  date_order: number;
+  month_order: number;
+  year_order: number;
+  start_time: number;
+  end_time: number;
+  limitation?: number;
+}): Promise<RoomFromApi[]> => {
+  try {
+    const response = await api.get('/api/v1/user/searchroom', { params });
+    return response.data.data || [];
+  } catch (error: any) {
+    console.error('Error searching rooms:', error);
     throw error;
   }
 };

@@ -1,0 +1,52 @@
+.roomGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 30px;
+    justify-content: center;
+    max-width: 1150px;
+    padding: 0 10px;
+    margin: 0 auto;
+  }
+  
+  .paginationContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .paginationButton {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+    min-width: 40px;
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .activePaginationButton {
+    background-color: #2563eb;
+    color: #fff;
+    border: 1px solid #2563eb; /* Sử dụng border thay vì borderColor */
+    font-weight: bold;
+  }
+  
+  .disabledPaginationButton {
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+    color: #aaa;
+    border: 1px solid #ddd; /* Sử dụng border thay vì borderColor */
+  }
+  
+  .noRoomsMessage {
+    text-align: center;
+    grid-column: 1 / -1;
+    color: #6c757d;
+    font-size: 18px;
+    padding: 40px 0;
+  }

@@ -132,6 +132,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
     if (facilities.length > 0) {
       setLoading(false);
+      console.log('Facilities from API:', facilities);
     } else {
       setLoading(false);
       setError("Không có dữ liệu cơ sở.");
