@@ -82,6 +82,16 @@ interface GetRoomResponse {
   metadata: null;
 }
 
+interface CancelRoomResponse {
+  msg: string;
+  data: {
+    user_id: number;
+    order_id: number;
+    date_cancel: string;
+    id: number;
+  };
+}
+
 export const fetchInitialData = async (): Promise<ApiResponse> => {
   try {
     const [userResponse, facilitiesResponse] = await Promise.all([
@@ -122,7 +132,6 @@ export const fetchRoomTypes = async (): Promise<RoomType[]> => {
   }
 };
 
-// Thêm hàm mới để lấy thông tin phòng dựa trên room_id
 export const fetchRoomById = async (roomId: number): Promise<RoomFromApi> => {
   try {
     const response = await api.get(`/api/v1/user/room1/${roomId}`);
@@ -176,6 +185,16 @@ export const getAllOrders = async (): Promise<GetAllOrderResponse> => {
     return response.data;
   } catch (error: any) {
     console.error('Error fetching all orders:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const cancelRoom = async (orderId: number): Promise<CancelRoomResponse> => {
+  try {
+    const response = await api.post('/api/v1/user/cancelroom', { order_id: orderId });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error canceling room:', error.response?.data || error.message);
     throw error;
   }
 };
