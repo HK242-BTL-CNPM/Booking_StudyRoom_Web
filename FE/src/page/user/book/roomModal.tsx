@@ -158,7 +158,6 @@ const RoomModal: React.FC<RoomModalProps> = ({ room, onClose, onBookRoom }) => {
 
   const handleBookClick = () => {
     onBookRoom(room.id);
-    onClose();
   };
 
   return (

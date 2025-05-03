@@ -46,6 +46,20 @@ interface ApiResponse {
   facilities: Facility[];
 }
 
+interface OrderRoomResponse {
+  msg: string;
+  data: {
+    id: number;
+    date: string;
+    end: string;
+    is_cancel: boolean;
+    room_id: number;
+    user_id: number;
+    begin: string;
+    is_used: boolean;
+  };
+}
+
 export const fetchInitialData = async (): Promise<ApiResponse> => {
   try {
     const [userResponse, facilitiesResponse] = await Promise.all([
@@ -102,6 +116,23 @@ export const searchRooms = async (params: {
     return response.data.data || [];
   } catch (error: any) {
     console.error('Error searching rooms:', error);
+    throw error;
+  }
+};
+
+export const orderRoom = async (params: {
+  room_id: number;
+  date: number;
+  month: number;
+  year: number;
+  start_time: number;
+  end_time: number;
+}): Promise<OrderRoomResponse> => {
+  try {
+    const response = await api.post('/api/v1/user/orderroom', params);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error ordering room:', error.response?.data || error.message);
     throw error;
   }
 };

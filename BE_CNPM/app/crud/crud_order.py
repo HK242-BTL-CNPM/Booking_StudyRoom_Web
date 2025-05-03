@@ -155,8 +155,8 @@ def update_state_order_room(session: Session, order_id: int, isused: bool=False,
     if not order_room:
         raise HTTPException(status_code=404, detail="OrderRoom not found")
     
-    order_room.isused = isused
-    order_room.iscancel = iscancel
+    order_room.is_used = isused
+    order_room.is_cancel = iscancel
 
     session.add(order_room)
     session.commit()
@@ -211,7 +211,7 @@ def delete_order_room(session: Session, order_id: int) -> bool:
     session.commit()
     return True
 
-def get_all_order_rooms(session: Session) -> List[OrderRoom]:
+def get_all_order_rooms(session: Session, user_id:int ) -> List[OrderRoom]:
     """
     Retrieve all OrderRoom entries.
     
@@ -224,7 +224,7 @@ def get_all_order_rooms(session: Session) -> List[OrderRoom]:
     Raises:
         HTTPException: If no OrderRooms are found.
     """
-    order_rooms = session.exec(select(OrderRoom)).all()
+    order_rooms = session.exec(select(OrderRoom).where(OrderRoom.user_id == user_id)).all()
     if not order_rooms:
         raise HTTPException(status_code=404, detail="No OrderRooms found")
     return order_rooms

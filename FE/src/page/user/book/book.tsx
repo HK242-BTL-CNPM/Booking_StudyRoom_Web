@@ -4,7 +4,8 @@ import Footer from "../component/footer";
 import FilterBar from "./filterBar";
 import RoomList from "./roomList";
 import RoomModal from "./roomModal";
-import { searchRooms, fetchBuildings, fetchRoomTypes } from "../../../api/apiService";
+import { searchRooms, fetchBuildings, fetchRoomTypes, orderRoom } from "../../../api/apiService";
+import { useAuth } from "../../../AuthContext";
 
 export interface Room {
   id: number;
@@ -17,6 +18,7 @@ export interface Room {
 }
 
 function Book() {
+  const { user } = useAuth(); // Lấy user từ AuthContext
   const [filteredAvailableRooms, setFilteredAvailableRooms] = useState<Room[]>([]);
   const [buildings, setBuildings] = useState<string[]>(["Tất cả"]);
   const [roomTypes, setRoomTypes] = useState<{ id: number; type_name: string }[]>([]);
@@ -231,12 +233,39 @@ function Book() {
     setSelectedRoom(null);
   };
 
-  const handleBookRoom = (roomId: number) => {
-    setFilteredAvailableRooms((prevRooms) =>
-      prevRooms.filter((room) => room.id !== roomId)
-    );
-    alert(`Phòng ID ${roomId} đã được đặt thành công!`);
-    handleCloseModal();
+  const handleOrderRoom = async (roomId: number) => {
+    if (!startDate || !startTime || !endTime) {
+      setSearchError("Vui lòng chọn ngày và thời gian trước khi đặt phòng.");
+      return;
+    }
+  
+    const dateParts = startDate.split("-");
+    const year = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10);
+    const date = parseInt(dateParts[2], 10); // Lấy ngày từ startDate
+    const startHour = parseInt(startTime.split(":")[0], 10);
+    const endHour = parseInt(endTime.split(":")[0], 10);
+  
+    try {
+      const response = await orderRoom({
+        room_id: roomId,
+        date: date,
+        month: month,
+        year: year,
+        start_time: startHour,
+        end_time: endHour,
+      });
+      console.log("Order room response:", response);
+  
+      setFilteredAvailableRooms((prevRooms) =>
+        prevRooms.filter((room) => room.id !== roomId)
+      );
+      alert(response.msg || "Đặt phòng thành công!");
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error ordering room:", error);
+      setSearchError("Không thể đặt phòng. Vui lòng thử lại. Kiểm tra console log.");
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -288,7 +317,7 @@ function Book() {
             rooms={filteredAvailableRooms}
             currentPage={currentPage}
             onShowDetails={handleShowDetails}
-            onBookRoom={handleBookRoom}
+            onBookRoom={handleOrderRoom} // Truyền hàm orderRoom
             onPageChange={handlePageChange}
           />
         </main>
@@ -298,7 +327,7 @@ function Book() {
       <RoomModal
         room={selectedRoom}
         onClose={handleCloseModal}
-        onBookRoom={handleBookRoom}
+        onBookRoom={handleOrderRoom} // Truyền hàm orderRoom
       />
     </>
   );
