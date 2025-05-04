@@ -79,10 +79,8 @@ function App() {
           }
         />
 
-        <Route path="/checkin" element={<Checkin />} />
-
         {/* Các route không cần bảo vệ */}
-        {/* Các route cần bảo vệ */}
+        {/* Các route cần bảo vệ của User */}
         <Route
           path="/book"
           element={
@@ -104,6 +102,14 @@ function App() {
           element={
             <PrivateRoute>
               <StatusRoom />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/checkin"
+          element={
+            <PrivateRoute>
+              <Checkin />
             </PrivateRoute>
           }
         />
