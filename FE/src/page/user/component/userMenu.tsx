@@ -32,7 +32,7 @@ function UserMenu() {
           <div>{user.isAdmin ? "Admin" : "User"}</div>
         </div>
         <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-          {user.username.charAt(0).toUpperCase()}
+          {user?.username?.charAt(0).toUpperCase()}
         </div>
       </div>
 

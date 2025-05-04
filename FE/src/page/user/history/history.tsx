@@ -4,8 +4,8 @@ import Header from "../component/header";
 import Footer from "../component/footer";
 import { useCalendarApp, ScheduleXCalendar } from "@schedule-x/react";
 import {
-  createViewDay,
-  createViewWeek,
+  // createViewDay,
+  // createViewWeek,
   createViewMonthGrid,
   createViewMonthAgenda,
 } from "@schedule-x/calendar";
