@@ -92,6 +92,17 @@ interface CancelRoomResponse {
   };
 }
 
+interface RoomResponse {
+  msg: string;
+  data: RoomFromApi[];
+  metadata: {
+    page: number;
+    perpage: number;
+    total: number;
+    total_page: number;
+  };
+}
+
 export const fetchInitialData = async (): Promise<ApiResponse> => {
   try {
     const [userResponse, facilitiesResponse] = await Promise.all([
@@ -214,6 +225,22 @@ export const changeUserStatus = async (username: string, isActive: boolean): Pro
     return response.data;
   } catch (error: any) {
     console.error(`Error changing user status for ${username}:`, error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
+
+export const getAllRooms = async (params: {
+  branch_id?: number;
+  building_id?: number;
+  room_type_id?: number;
+  page?: number;
+  limit?: number;
+}): Promise<RoomResponse> => {
+  try {
+    const response = await api.get('/api/v1/admin/all_room', { params });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching all rooms:', error.response?.data || error.message);
     throw error.response?.data || error;
   }
 };
