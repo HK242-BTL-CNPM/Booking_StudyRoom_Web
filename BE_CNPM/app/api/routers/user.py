@@ -16,7 +16,7 @@ from app.crud.crud_order import create_cancel_room, create_used_room, get_order_
 from app.crud.crud_order import  update_used_room,check_overlapping_time_of_room_by_user, find_order_for_checkin,create_used_room, get_used_room_being_used_by_user_id, update_used_room, get_order_room,get_used_room_by_order_id
 
 from app.crud.crud_room import filter_rooms, check_lib_available,get_room_type
-from app.crud.crud_order import checkin_library, checkout_library,get_cancel_room,get_order_room, get_used_room, get_cancel_room_by_user_id,get_cancel_room_by_order_id, get_used_room_being_used_by_user_id, get_used_room_by_order_id, get_used_room_by_user_id
+from app.crud.crud_order import get_order_rooms_by_filter,checkin_library, checkout_library,get_cancel_room,get_order_room, get_used_room, get_cancel_room_by_user_id,get_cancel_room_by_order_id, get_used_room_being_used_by_user_id, get_used_room_by_order_id, get_used_room_by_user_id
 
 
 from app.crud.crud_report_noti import create_report, get_report, get_reports, update_report, delete_report
@@ -25,6 +25,8 @@ from typing import List
 from app.crud.crud_room import  get_all_branches
 from app.crud.crud_room import get_buildings_by_branch
 from app.crud.crud_room import get_room_type,get_all_rt
+from app.crud.crud_room import get_room_type,get_all_rt
+from app.crud.crud_room import create_room, get_room, update_room, delete_room, delete_room_device,filter_rooms
 
 
 router = APIRouter()
@@ -289,7 +291,12 @@ def cancel_room(data: CancelIn, current_user: CurrentUser, session: SessionDep):
         raise HTTPException(status_code=404, detail="Cannot find order")
     if order.is_used or order.is_cancel:
         raise HTTPException(status_code=404, detail="Cannot cancel order")
-    
+    if order.is_cancel:
+        raise HTTPException(status_code=404, detail="You have already canceled this order")
+    if order.user_id != user.id:
+        raise HTTPException(status_code=404, detail="You are not the owner of this order")
+    if order.is_used:
+        raise HTTPException(status_code=404, detail="You have already checked in this room so you cannot cancel this order")
   # Lấy thời gian hiện tại
     now = datetime.now()
     
@@ -378,11 +385,16 @@ def check_in2( current_user: CurrentUser,
     if order.is_cancel:
         raise HTTPException(status_code=404, detail="You have already canceled this order")
     
-    used_order= create_order_room(session, order_id=data.order_id, user_id=user.id, date_checkin=datetime.now().time())
+    used_order= create_used_room(session, 
+                                 order_id=data.order_id,
+                                   user_id=user.id,
+                                    room_id= order.room_id,
+                                    date= datetime.now().date(),
+                                    checkin=datetime.now().time())
     
     if not used_order:
         raise HTTPException(status_code=404, detail="Cannot check in")
-    if not update_state_order_room(session, order_id=data.order_id, isused=True):
+    if not update_state_order_room(session, order_id=data.order_id, isused=True, iscancel=False):
         raise HTTPException(status_code=404, detail="Cannot check in")
     
     return {
@@ -392,16 +404,17 @@ def check_in2( current_user: CurrentUser,
 
 @router.post("/checkout2", response_model=responseorder)
 def check_out2(current_user: CurrentUser,
-              session: SessionDep,
-              data: CheckOut2):
+              session: SessionDep):
     user = current_user
-    if not data.order_id:
-       raise HTTPException(status_code=404, detail="Please enter order_id")
-    used_room =update_used_room(session, used_room_id=data.order_id, user_id=user.id, checkout=datetime.now().time())
+    used_order= get_used_room_being_used_by_user_id(session, user.id)
+
+    if used_order is None:
+       raise HTTPException(status_code=404, detail="You have not checked in any room")
+    
+    used_room =update_used_room(session, used_room_id=used_order.id, user_id=user.id, checkout=datetime.now().time())
     if not used_room:
         raise HTTPException(status_code=404, detail="Cannot check out")
-    if not update_state_order_room(session, order_id=data.order_id, isused=False):
-        raise HTTPException(status_code=404, detail="Cannot check out")
+
     return {
         "msg": "Check out successfully",
         "data": used_room
@@ -477,6 +490,40 @@ def get_all_order_of_user(current_user: CurrentUser, session: SessionDep):
 #     if not order_rooms:
 #         raise HTTPException(status_code=404, detail="No OrderRooms found")
 #     return order_rooms
+
+
+@router.get("/getorrderbyfilter", response_model=responseorder)
+def get_order_by_filter(session: SessionDep,
+                         current_user: CurrentUser,
+                         year: int = Query(...,ge=2024, title="Year", description="Year"),
+                         date_start: int = Query(...,ge=1,le=31, title="Start date", description="Start date of filter"),
+                         date_end: int = Query(...,ge=1,le=31, title="End date", description="End date of filter"),
+                            month_start: int = Query(...,ge=1,le=12, title="Month", description="Month of filter"),
+                            month_end: int = Query(...,ge=1,le=12, title="Month", description="Month of filter")
+                        ):
+    user = current_user
+    #check time is available orr not
+    checkyear(year)
+    checkmonth(month_start)
+    checkmonth(month_end)
+    checkday(date_start)
+    checkday(date_end)
+
+    orders= get_order_rooms_by_filter(session=session,
+                                      user_id= user.id,
+                                       year= year,
+                                        month_start= month_start,
+                                         date_start= date_start,
+                                          month_end= month_end,
+                                           date_end= date_end)
+    if not orders:
+        raise HTTPException(status_code=404, detail="Cannot find order")
+    return {
+        "msg": "Get order successfully",
+        "data": orders
+    }
+
+
 
 @router.get("/getorder/{order_id}", response_model=responseorder)
 def get_order(session: SessionDep, order_id: int):
@@ -636,4 +683,20 @@ def get_all_room_type(session: SessionDep):
     return {
         "msg": "Get all room types successfully",
         "data": room_types
+    }
+
+@router.get("/room1/{room_id}", response_model=reponse)
+def get_room_data(room_id: int, session: SessionDep):
+    '''
+    Get a room by ID.
+
+    Args:
+        room_id: ID of the room to retrieve.
+    '''
+    room = get_room(session, room_id, None)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return {
+        "msg": "Get room successfully",
+        "data": room
     }

@@ -13,41 +13,68 @@ function Description() {
         </h1>
 
         <div className="flex flex-col lg:flex-row pt-10 gap-4">
-          <div className="lg:basis-2/5 w-full aspect-[7/6] overflow-hidden">
-            <img
-              src={PreRoomImg}
-              className="rounded-[2rem] w-[61%] mx-auto lg:w-full h-full object-contain lg:object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
-              alt="phong-thuyet-trinh"
-            />
-          </div>
+  {/* Phòng Thuyết Trình */}
+  <div className="lg:basis-2/5 w-full aspect-[7/6] overflow-hidden relative">
+    <img
+      src={PreRoomImg}
+      className="rounded-[2rem] w-[61%] mx-auto lg:w-full h-full object-contain lg:object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
+      alt="phong-thuyet-trinh"
+    />
+    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+      <div className="bg-[#146C65]/40 px-2 py-2 rounded-lg hover:bg-[#146C65]">
+        <span className="text-white font-bold text-3xl tracking-wide  ">PHÒNG THUYẾT TRÌNH</span>
+      </div>
+    </div>
+  </div>
 
-          <div className="flex flex-col lg:basis-3/5 w-full gap-5">
-            <div className="w-full aspect-[6/3] overflow-hidden">
-              <img
-                src={MeetRoomImg}
-                className="rounded-[2rem] w-full h-full object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
-                alt="phong-thuyet-trinh"
-              />
-            </div>
+  {/* Các phòng còn lại */}
+  <div className="flex flex-col lg:basis-3/5 w-full gap-5">
+    {/* Phòng Họp Nhóm */}
+    <div className="w-full aspect-[6/3] overflow-hidden relative">
+      <img
+        src={MeetRoomImg}
+        className="rounded-[2rem] w-full h-full object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
+        alt="phong-hop-nhom"
+      />
+     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+     <div className="bg-[#146C65]/40 px-4 py-2 rounded-lg hover:bg-[#146C65]">
+     <span className="text-white font-bold text-3xl tracking-wide  ">PHÒNG HỌP NHÓM</span>
+      </div>
+    </div>
+  </div>
 
-            <div className="flex flex-row gap-5">
-              <div className="w-1/2 aspect-[7/6] overflow-hidden">
-                <img
-                  src={MentorRoomImg}
-                  className="rounded-[2rem] w-full h-full object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
-                  alt="phong-thuyet-trinh"
-                />
-              </div>
-              <div className="w-1/2 aspect-[7/6] overflow-hidden">
-                <img
-                  src={IndiRoomImg}
-                  className="rounded-[2rem] w-full h-full object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
-                  alt="phong-thuyet-trinh"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="flex flex-row gap-5">
+      {/* Phòng Mentor */}
+      <div className="w-1/2 aspect-[7/6] overflow-hidden relative">
+        <img
+          src={MentorRoomImg}
+          className="rounded-[2rem] w-full h-full object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
+          alt="phong-mentor"
+        />
+       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+       <div className="bg-[#146C65]/40 px-4 py-2 rounded-lg hover:bg-[#146C65]">
+       <span className="text-white font-bold text-3xl tracking-wide  ">PHÒNG MENTOR</span>
+      </div>
+    </div>
+  </div>
+
+      {/* Phòng Cá Nhân */}
+      <div className="w-1/2 aspect-[7/6] overflow-hidden relative">
+        <img
+          src={IndiRoomImg}
+          className="rounded-[2rem] w-full h-full object-cover shadow-md hover:scale-105 transition duration-300 cursor-pointer"
+          alt="phong-ca-nhan"
+        />
+       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+       <div className="bg-[#146C65]/40 px-4 py-2 rounded-lg hover:bg-[#146C65]">
+       <span className="text-white font-bold text-3xl tracking-wide  ">PHÒNG CÁ NHÂN</span>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
+
 
         <h1 className="text-3xl font-bold pt-16 text-[#2563EB]">
           Phòng tự học
