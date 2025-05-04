@@ -68,8 +68,8 @@ function Footer() {
               <Link className="text-[#666B72] font-medium pl-1" to="../status">
                 Trạng thái phòng
               </Link>
-              <Link className="text-[#666B72] font-medium pl-1" to="../report">
-                Báo cáo sự cố
+              <Link className="text-[#666B72] font-medium pl-1" to="../checkin">
+                Checkin/Checkout
               </Link>
             </div>
           </div>

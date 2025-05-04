@@ -1,8 +1,9 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./page/auth/login";
 import PrivateRoute from "./page/auth/PrivateRoute";
 import AdminRoute from "./page/auth/AdminRoute";
+import { useAuth } from "./AuthContext";
 
 // --- Import các trang User---
 import Book from "./page/user/book/book";
@@ -25,11 +26,23 @@ import { NotificationProvider } from "./page/admin/notification/NotificationCont
 import "./assets/css/output.css";
 
 function App() {
+  const { user } = useAuth();
   return (
     <>
       <Routes>
         {/* Các route không cần bảo vệ */}
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            user?.isAdmin ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            )
+          }
+        />
         <Route path="/login" element={<Login />} />
 
         {/* Các route cần bảo vệ của Admin */}
