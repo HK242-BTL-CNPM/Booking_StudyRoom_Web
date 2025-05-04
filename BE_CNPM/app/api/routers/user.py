@@ -291,7 +291,12 @@ def cancel_room(data: CancelIn, current_user: CurrentUser, session: SessionDep):
         raise HTTPException(status_code=404, detail="Cannot find order")
     if order.is_used or order.is_cancel:
         raise HTTPException(status_code=404, detail="Cannot cancel order")
-    
+    if order.is_cancel:
+        raise HTTPException(status_code=404, detail="You have already canceled this order")
+    if order.user_id != user.id:
+        raise HTTPException(status_code=404, detail="You are not the owner of this order")
+    if order.is_used:
+        raise HTTPException(status_code=404, detail="You have already checked in this room so you cannot cancel this order")
   # Lấy thời gian hiện tại
     now = datetime.now()
     
@@ -386,10 +391,10 @@ def check_in2( current_user: CurrentUser,
                                     room_id= order.room_id,
                                     date= datetime.now().date(),
                                     checkin=datetime.now().time())
-    update_state_order_room(session, order_id=data.order_id, isused=True)
+    
     if not used_order:
         raise HTTPException(status_code=404, detail="Cannot check in")
-    if not update_state_order_room(session, order_id=data.order_id, isused=True):
+    if not update_state_order_room(session, order_id=data.order_id, isused=True, iscancel=False):
         raise HTTPException(status_code=404, detail="Cannot check in")
     
     return {

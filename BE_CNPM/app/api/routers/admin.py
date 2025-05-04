@@ -19,6 +19,9 @@ from app.crud.crud_room import create_room, get_room, update_room, delete_room, 
 from app.crud.crud_room import create_room_device, get_room_device, update_room_device, delete_room_device
 #from app.crud.crud_room import create_branch, create_building, create_room_type, create_room, 
 
+from app.crud.crud_order import get_order_rooms_by_filter
+from app.api.dependencies import SessionDep, checkyear, checkmonth, checkday
+from app.schemas.order import responseorder
 router = APIRouter()
 
 # router.include_router(
@@ -469,4 +472,39 @@ def delete_room_data(room_id: int, session: SessionDep):
         "msg": "Delete room successfully",
         "data": None
     }
+
+
+
+
+
+@router.get("/getorrderbyfilter", response_model=responseorder)
+def get_order_by_filter(session: SessionDep,
+                         room_id: int = Query(..., title="Room ID", description="Room ID"),
+                         year: int = Query(...,ge=2024, title="Year", description="Year"),
+                         date_start: int = Query(...,ge=1,le=31, title="Start date", description="Start date of filter"),
+                         date_end: int = Query(...,ge=1,le=31, title="End date", description="End date of filter"),
+                            month_start: int = Query(...,ge=1,le=12, title="Month", description="Month of filter"),
+                            month_end: int = Query(...,ge=1,le=12, title="Month", description="Month of filter")
+                        ):
+    #check time is available orr not
+    checkyear(year)
+    checkmonth(month_start)
+    checkmonth(month_end)
+    checkday(date_start)
+    checkday(date_end)
+
+    orders= get_order_rooms_by_filter(session=session,
+                                        room_id= room_id,
+                                       year= year,
+                                        month_start= month_start,
+                                         date_start= date_start,
+                                          month_end= month_end,
+                                           date_end= date_end)
+    if not orders:
+        raise HTTPException(status_code=404, detail="Cannot find order")
+    return {
+        "msg": "Get order successfully",
+        "data": orders
+    }
+
 
