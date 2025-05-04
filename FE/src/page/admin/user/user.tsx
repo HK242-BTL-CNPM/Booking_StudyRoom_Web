@@ -3,10 +3,11 @@ import Header_admin from "../components/header_admin";
 import { useState, useEffect } from "react";
 import { FaSort, FaSearch } from "react-icons/fa";
 import { useAuth } from "../../../AuthContext";
-import api from "../../../api/axiosConfig"; // Import axiosConfig để gọi API
+import api from "../../../api/axiosConfig";
+import { changeUserStatus } from "../../../api/apiService";
 
 interface User {
-  id?: number; // Có thể không có id, sử dụng MSSV làm id tạm thời
+  id?: number;
   username: string;
   MSSV: number | null;
   lastname: string;
@@ -18,7 +19,7 @@ interface User {
 }
 
 function User() {
-  const { token } = useAuth(); // Lấy token từ AuthContext
+  const { token } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: string } | null>(null);
   const [usersList, setUsersList] = useState<User[]>([]);
@@ -28,35 +29,27 @@ function User() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Gọi API để lấy danh sách user
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
         const response = await api.get('/api/v1/admin/all_user', {
-          params: {
-            page: 1, // Bắt đầu từ trang 1
-            limit: 100, // Lấy tối đa 100 user (có thể điều chỉnh)
-          },
-          headers: {
-            Authorization: `Bearer ${token}`, // Thêm token vào header
-          },
+          params: { page: 1, limit: 100 },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const apiUsers = response.data.data;
-
-        // Lọc user có MSSV không null và ánh xạ dữ liệu
         const filteredUsers = apiUsers
           .filter((user: User) => user.MSSV !== null)
           .map((user: User, index: number) => ({
-            id: index + 1, // Tạo id tạm thời dựa trên index nếu không có id
+            id: index + 1,
             username: user.username,
             MSSV: user.MSSV,
             lastname: user.lastname,
             firstname: user.firstname,
             email: user.email,
             isActive: user.isActive,
-            fullName: `${user.lastname} ${user.firstname}`, // Ghép lastname và firstname
-            status: user.isActive ? "Hoạt động" : "Bị khóa", // Chuyển isActive thành status
+            fullName: `${user.lastname} ${user.firstname}`,
+            status: user.isActive ? "Hoạt động" : "Bị khóa",
           }));
         setUsersList(filteredUsers);
       } catch (err: any) {
@@ -71,6 +64,27 @@ function User() {
       fetchUsers();
     }
   }, [token]);
+
+  const handleChangeUserStatus = async (username: string, isActive: boolean) => {
+    try {
+      console.log(`Calling changeUserStatus for ${username} with isActive: ${isActive}`);
+      await changeUserStatus(username, isActive);
+      // Cập nhật danh sách user sau khi API thành công
+      setUsersList((prevUsers) =>
+        prevUsers.map((user) =>
+          user.username === username
+            ? { ...user, isActive, status: isActive ? "Hoạt động" : "Bị khóa" }
+            : user
+        )
+      );
+      alert(`Đã ${isActive ? "mở khóa" : "xóa quyền"} user ${username} thành công!`);
+    } catch (err: any) {
+      console.error("Detailed error:", err);
+      // Hiển thị lỗi chi tiết từ backend
+      const errorDetail = err?.detail?.[0]?.msg || err?.message || "Lỗi không xác định";
+      alert(`Lỗi: Không thể ${isActive ? "mở khóa" : "xóa quyền"} user ${username}. Chi tiết: ${errorDetail}`);
+    }
+  };
 
   const handleToggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -88,8 +102,8 @@ function User() {
     if (!sortConfig) return 0;
     const { key, direction } = sortConfig;
     const order = direction === "asc" ? 1 : -1;
-    const valA = a[key as keyof typeof a] ?? ""; // Xử lý null/undefined
-    const valB = b[key as keyof typeof b] ?? ""; // Xử lý null/undefined
+    const valA = a[key as keyof typeof a] ?? "";
+    const valB = b[key as keyof typeof b] ?? "";
     return (valA < valB ? -1 : valA > valB ? 1 : 0) * order;
   });
 
@@ -217,6 +231,7 @@ function User() {
                             borderRadius: "4px",
                             cursor: "pointer",
                           }}
+                          onClick={() => handleChangeUserStatus(user.username, true)}
                         >
                           Mở khóa
                         </button>
@@ -232,6 +247,7 @@ function User() {
                             borderRadius: "4px",
                             cursor: "pointer",
                           }}
+                          onClick={() => handleChangeUserStatus(user.username, false)}
                         >
                           Xóa quyền
                         </button>

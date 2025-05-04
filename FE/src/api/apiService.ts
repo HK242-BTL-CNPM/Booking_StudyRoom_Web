@@ -198,3 +198,22 @@ export const cancelRoom = async (orderId: number): Promise<CancelRoomResponse> =
     throw error;
   }
 };
+
+export const changeUserStatus = async (username: string, isActive: boolean): Promise<any> => {
+  try {
+    console.log(`Sending request to /api/v1/admin/change_user_status/${username}?isActive=${isActive} with query params`);
+    const response = await api.put(`/api/v1/admin/change_user_status/${username}`, null, {
+      params: {
+        isActive: isActive, // Gửi isActive như query parameter
+      },
+      headers: {
+        'Content-Type': 'application/json', // Đảm bảo header phù hợp
+      },
+    });
+    console.log('Response from server:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Error changing user status for ${username}:`, error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
