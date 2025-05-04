@@ -3,10 +3,8 @@ import React from "react";
 import { FaBell } from "react-icons/fa";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import {
-  mockNotifications,
-  NotificationRowProps,
-} from "../notification/mockNotifications";
+import { NotificationRowProps } from "../notification/mockNotifications";
+import { useNotification } from "../notification/NotificationContext";
 
 // --- NotificationItem ---
 function NotificationItem({
@@ -117,14 +115,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
   forwardedRef,
 }) => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = React.useState(mockNotifications); // Thêm state để quản lý thông báo
-
-  // Lấy danh sách thông báo từ mockNotifications
-  const handleNotificationClick = (index: number) => {
-    setNotifications((prev) =>
-      prev.map((noti, i) => (i === index ? { ...noti, isNew: false } : noti))
-    );
-  };
+  const { notifications, markAsRead } = useNotification();
 
   const handleSeeMoreClick = () => {
     navigate("/notification");
@@ -144,7 +135,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
               message={noti.message}
               isNew={noti.isNew}
               timestamp={noti.timestamp}
-              onClick={() => handleNotificationClick(index)} // Truyền hàm onClick
+              onClick={() => markAsRead(index)}
             />
           ))
         ) : (

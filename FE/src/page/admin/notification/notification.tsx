@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import Sidebar from "../components/sidebar"; // Điều chỉnh đường dẫn nếu cần
 import Header_admin from "../components/header_admin"; // Điều chỉnh đường dẫn nếu cần
 import styles from "./notification.module.css"; // Tạo file CSS Module riêng cho trang này
-import { mockNotifications, NotificationRowProps } from "./mockNotifications";
+import { NotificationRowProps } from "./mockNotifications";
 import Select from "react-select";
+import { useNotification } from "./NotificationContext";
 
 function NotificationRow({
   avatarUrl,
@@ -45,9 +46,8 @@ function NotificationRow({
 // --- Component Trang Notification ---
 function NotificationPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [notifications, setNotifications] = useState<NotificationRowProps[]>(
-    []
-  ); // State chứa danh sách thông báo
+  const { notifications, markAsRead } = useNotification();
+
   const [isLoading, setIsLoading] = useState(false); // State loading
 
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -64,11 +64,7 @@ function NotificationPage() {
   const handleToggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
-  const handleRead = (index: number) => {
-    setNotifications((prev) =>
-      prev.map((n, i) => (i === index ? { ...n, isNew: false } : n))
-    );
-  };
+
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
     const dateA = parseDate(a.timestamp);
     const dateB = parseDate(b.timestamp);
@@ -82,7 +78,6 @@ function NotificationPage() {
     const fetchNotifications = async () => {
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 500));
-      setNotifications(mockNotifications);
       setIsLoading(false);
     };
     fetchNotifications();
@@ -188,7 +183,7 @@ function NotificationPage() {
                 <NotificationRow
                   key={index}
                   {...noti}
-                  onClick={() => handleRead(notifications.indexOf(noti))}
+                  onClick={() => markAsRead(notifications.indexOf(noti))}
                 />
               ))
             ) : (

@@ -1,21 +1,27 @@
 import { Routes, Route } from "react-router-dom";
+
+import Login from "./page/auth/login";
+import PrivateRoute from "./page/auth/PrivateRoute";
+
+// --- Import các trang User---
 import Book from "./page/user/book/book";
 import History from "./page/user/history/history";
 import Home from "./page/user/home/home";
-import Login from "./page/auth/login";
 import StatusRoom from "./page/user/status/status";
 import ReportIssue from "./page/user/report/report";
 import Profile from "./page/user/profile/profile";
+import Checkin from "./page/user/checkin/checkin";
+
+// --- Import các trang Admin---
 import Dashboard from "./page/admin/dashboard/Dashboard";
 import Booking from "./page/admin/booking/booking";
 import User from "./page/admin/user/user";
 import Room from "./page/admin/room/room";
 import Device from "./page/admin/device/device";
 import Notification from "./page/admin/notification/notification";
-import Checkin from "./page/user/checkin/checkin";
+import { NotificationProvider } from "./page/admin/notification/NotificationContext";
 
 import "./assets/css/output.css";
-import PrivateRoute from "./page/auth/PrivateRoute";
 
 function App() {
   return (
@@ -23,12 +29,56 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/user" element={<User />} />
-        <Route path="/room" element={<Room />} />
-        <Route path="/device" element={<Device />} />
-        <Route path="/notification" element={<Notification />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <NotificationProvider>
+              <Dashboard />
+            </NotificationProvider>
+          }
+        />
+        <Route
+          path="/booking"
+          element={
+            <NotificationProvider>
+              <Booking />
+            </NotificationProvider>
+          }
+        />
+        <Route
+          path="/user"
+          element={
+            <NotificationProvider>
+              <User />
+            </NotificationProvider>
+          }
+        />
+        <Route
+          path="/room"
+          element={
+            <NotificationProvider>
+              <Room />
+            </NotificationProvider>
+          }
+        />
+        <Route
+          path="/device"
+          element={
+            <NotificationProvider>
+              <Device />
+            </NotificationProvider>
+          }
+        />
+        <Route
+          path="/notification"
+          element={
+            <NotificationProvider>
+              <Notification />
+            </NotificationProvider>
+          }
+        />
+
         <Route path="/checkin" element={<Checkin />} />
 
         {/* Các route không cần bảo vệ */}
