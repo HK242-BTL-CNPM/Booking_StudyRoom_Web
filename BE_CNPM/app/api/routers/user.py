@@ -16,7 +16,7 @@ from app.crud.crud_order import create_cancel_room, create_used_room, get_order_
 from app.crud.crud_order import  update_used_room,check_overlapping_time_of_room_by_user, find_order_for_checkin,create_used_room, get_used_room_being_used_by_user_id, update_used_room, get_order_room,get_used_room_by_order_id
 
 from app.crud.crud_room import filter_rooms, check_lib_available,get_room_type
-from app.crud.crud_order import checkin_library, checkout_library,get_cancel_room,get_order_room, get_used_room, get_cancel_room_by_user_id,get_cancel_room_by_order_id, get_used_room_being_used_by_user_id, get_used_room_by_order_id, get_used_room_by_user_id
+from app.crud.crud_order import get_order_rooms_by_filter,checkin_library, checkout_library,get_cancel_room,get_order_room, get_used_room, get_cancel_room_by_user_id,get_cancel_room_by_order_id, get_used_room_being_used_by_user_id, get_used_room_by_order_id, get_used_room_by_user_id
 
 
 from app.crud.crud_report_noti import create_report, get_report, get_reports, update_report, delete_report
@@ -479,6 +479,40 @@ def get_all_order_of_user(current_user: CurrentUser, session: SessionDep):
 #     if not order_rooms:
 #         raise HTTPException(status_code=404, detail="No OrderRooms found")
 #     return order_rooms
+
+
+@router.get("/getorrderbyfilter", response_model=responseorder)
+def get_order_by_filter(session: SessionDep,
+                         current_user: CurrentUser,
+                         year: int = Query(...,ge=2024, title="Year", description="Year"),
+                         date_start: int = Query(...,ge=1,le=31, title="Start date", description="Start date of filter"),
+                         date_end: int = Query(...,ge=1,le=31, title="End date", description="End date of filter"),
+                            month_start: int = Query(...,ge=1,le=12, title="Month", description="Month of filter"),
+                            month_end: int = Query(...,ge=1,le=12, title="Month", description="Month of filter")
+                        ):
+    user = current_user
+    #check time is available orr not
+    checkyear(year)
+    checkmonth(month_start)
+    checkmonth(month_end)
+    checkday(date_start)
+    checkday(date_end)
+
+    orders= get_order_rooms_by_filter(session=session,
+                                      user_id= user.id,
+                                       year= year,
+                                        month_start= month_start,
+                                         date_start= date_start,
+                                          month_end= month_end,
+                                           date_end= date_end)
+    if not orders:
+        raise HTTPException(status_code=404, detail="Cannot find order")
+    return {
+        "msg": "Get order successfully",
+        "data": orders
+    }
+
+
 
 @router.get("/getorder/{order_id}", response_model=responseorder)
 def get_order(session: SessionDep, order_id: int):

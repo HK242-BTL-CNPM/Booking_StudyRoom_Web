@@ -232,53 +232,44 @@ def get_all_order_rooms(session: Session, user_id:int ) -> List[OrderRoom]:
 def get_order_rooms_by_filter(
     session: Session,
     year: int,
-    month: int,
-    sort_order: str = "newest",  # "newest" hoặc "oldest"
+    date_start: int,
+    month_start: int,
+    date_end: int,
+    month_end: int,
     room_id: Optional[int] = None,
+    user_id: Optional[int] = None,
     begin: Optional[time] = None,
-    end: Optional[time] = None,
-    page: int = 1,
-    limit: int = 10
+    end: Optional[time] = None
 ) -> List[OrderRoom]:
     """
-    Filter OrderRoom entries by a specific month, with optional room_id, time range,
-    sorting by newest or oldest, and pagination support.
+    Filter OrderRoom entries by a specific date range, with optional room_id and time range.
     
     Args:
         session (Session): The database session.
         year (int): Year to filter (e.g., 2025).
-        month (int): Month to filter (1-12).
-        sort_order (str): Sort by "newest" (default) or "oldest".
+        date_start (int): Start day of the range (1-31).
+        month_start (int): Start month of the range (1-12).
+        date_end (int): End day of the range (1-31).
+        month_end (int): End month of the range (1-12).
         room_id (Optional[int]): Filter by room ID.
         begin (Optional[time]): Filter by start time (inclusive).
         end (Optional[time]): Filter by end time (inclusive).
-        page (int): Page number for pagination (default: 1).
-        limit (int): Number of items per page (default: 10, 0 means no limit).
     
     Returns:
         List[OrderRoom]: A list of OrderRoom objects matching the filters.
     
     Raises:
         HTTPException: If no OrderRooms match the filters, room not found,
-                       or invalid year/month.
+                       or invalid year/month/day.
     """
-    # Kiểm tra year và month hợp lệ
-
-    # Check in controller 
-    # if not (1 <= month <= 12):
-    #     raise HTTPException(status_code=400, detail="Invalid month (must be 1-12)")
-    # if year < 1900 or year > 9999:
-    #     raise HTTPException(status_code=400, detail="Invalid year")
-
-    # # Xây dựng khoảng thời gian cho tháng
+    # Xây dựng khoảng thời gian
     try:
-        start_date = date(year, month, 1)
-        # Tìm ngày cuối cùng của tháng
-        next_month = month + 1 if month < 12 else 1
-        next_year = year if month < 12 else year + 1
-        end_date = date(next_year, next_month, 1) - timedelta(days=1)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid year or month")
+        start_date = date(year, month_start, date_start)
+        end_date = date(year, month_end, date_end)
+        if start_date > end_date:
+            raise ValueError("Start date cannot be after end date")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date range: {str(e)}")
 
     # Khởi tạo query
     query = select(OrderRoom).where(
@@ -293,26 +284,22 @@ def get_order_rooms_by_filter(
             raise HTTPException(status_code=404, detail=f"Room with ID {room_id} not found")
         query = query.where(OrderRoom.room_id == room_id)
 
+    if user_id is not None:
+        user = session.get(User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
+        query = query.where(OrderRoom.user_id == user_id)
     # Filter by time range (begin and end)
     if begin is not None:
         query = query.where(OrderRoom.begin >= begin)
     if end is not None:
         query = query.where(OrderRoom.end <= end)
 
-    # Sắp xếp theo thời gian
-    if sort_order.lower() == "newest":
-        query = query.order_by(desc(OrderRoom.date), desc(OrderRoom.begin))
-    elif sort_order.lower() == "oldest":
-        query = query.order_by(asc(OrderRoom.date), asc(OrderRoom.begin))
-    else:
-        raise HTTPException(status_code=400, detail="Invalid sort_order. Use 'newest' or 'oldest'")
+    # Sắp xếp theo thời gian (mặc định newest)
+    query = query.order_by(desc(OrderRoom.date), desc(OrderRoom.begin))
 
-    # Phân trang
-    if limit == 0:
-        order_rooms = session.exec(query).all()
-    else:
-        offset = (page - 1) * limit
-        order_rooms = session.exec(query.offset(offset).limit(limit)).all()
+    # Thực thi query
+    order_rooms = session.exec(query).all()
 
     if not order_rooms:
         raise HTTPException(status_code=404, detail="No OrderRooms found with the given filters")
@@ -511,6 +498,7 @@ def check_overlapping_time_of_room_by_user(session: Session, room_id: int, date:
         .where(OrderRoom.room_id == room_id)
         .where(OrderRoom.user_id == user_id)
         .where(OrderRoom.date == date)
+        .where(OrderRoom.is_cancel == False)
         .where(
             # Kiểm tra xem khoảng thời gian yêu cầu có giao với khoảng thời gian của OrderRoom không
             (OrderRoom.begin < end_time) & (OrderRoom.end > start_time)
@@ -560,6 +548,7 @@ def check_room_availability(
         select(OrderRoom)
         .where(OrderRoom.room_id == room_id)
         .where(OrderRoom.date == date)
+        .where(OrderRoom.is_cancel == False)
         .where(
             # Kiểm tra xem khoảng thời gian yêu cầu có giao với khoảng thời gian của OrderRoom không
             (OrderRoom.begin < end_time) & (OrderRoom.end > start_time)
