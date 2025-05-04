@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import Login from "./page/auth/login";
 import PrivateRoute from "./page/auth/PrivateRoute";
+import AdminRoute from "./page/auth/AdminRoute";
 
 // --- Import các trang User---
 import Book from "./page/user/book/book";
@@ -27,59 +28,72 @@ function App() {
   return (
     <>
       <Routes>
+        {/* Các route không cần bảo vệ */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
 
+        {/* Các route cần bảo vệ của Admin */}
         <Route
           path="/dashboard"
           element={
-            <NotificationProvider>
-              <Dashboard />
-            </NotificationProvider>
+            <AdminRoute>
+              <NotificationProvider>
+                <Dashboard />
+              </NotificationProvider>
+            </AdminRoute>
           }
         />
         <Route
           path="/booking"
           element={
-            <NotificationProvider>
-              <Booking />
-            </NotificationProvider>
+            <AdminRoute>
+              <NotificationProvider>
+                <Booking />
+              </NotificationProvider>
+            </AdminRoute>
           }
         />
         <Route
           path="/user"
           element={
-            <NotificationProvider>
-              <User />
-            </NotificationProvider>
+            <AdminRoute>
+              <NotificationProvider>
+                <User />
+              </NotificationProvider>
+            </AdminRoute>
           }
         />
         <Route
           path="/room"
           element={
-            <NotificationProvider>
-              <Room />
-            </NotificationProvider>
+            <AdminRoute>
+              <NotificationProvider>
+                <Room />
+              </NotificationProvider>
+            </AdminRoute>
           }
         />
         <Route
           path="/device"
           element={
-            <NotificationProvider>
-              <Device />
-            </NotificationProvider>
+            <AdminRoute>
+              <NotificationProvider>
+                <Device />
+              </NotificationProvider>
+            </AdminRoute>
           }
         />
         <Route
           path="/notification"
           element={
-            <NotificationProvider>
-              <Notification />
-            </NotificationProvider>
+            <AdminRoute>
+              <NotificationProvider>
+                <Notification />
+              </NotificationProvider>
+            </AdminRoute>
           }
         />
 
-        {/* Các route không cần bảo vệ */}
         {/* Các route cần bảo vệ của User */}
         <Route
           path="/book"

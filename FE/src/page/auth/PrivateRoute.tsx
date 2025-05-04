@@ -2,14 +2,17 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../../AuthContext";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
-  if (!user) {
-    // Nếu chưa đăng nhập, chuyển hướng đến trang login
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Nếu đã đăng nhập, hiển thị nội dung
+  // Nếu là Admin mà cố truy cập route của User thì redirect về trang chính
+  if (!user.isUser) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 }
 
