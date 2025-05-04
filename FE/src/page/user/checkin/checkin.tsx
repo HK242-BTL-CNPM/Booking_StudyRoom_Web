@@ -232,7 +232,7 @@ function Checkin() {
         "Cơ sở",
         "Tòa",
         "Số phòng",
-        "Thời gian đặt",
+        "Thời gian bắt đầu",
         "Ngày đặt",
         "Thao tác",
       ].map((title, i) => (

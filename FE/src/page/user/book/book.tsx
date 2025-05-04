@@ -220,7 +220,7 @@ function Book() {
       setFilteredAvailableRooms(mappedRooms);
     } catch (error) {
       console.error('Error searching rooms:', error);
-      setSearchError("Không thể tìm kiếm phòng. Vui lòng thử lại.");
+      setSearchError("Vui lòng chọn giờ đặt phòng trước 60 phút");
       setFilteredAvailableRooms([]);
     }
   };
