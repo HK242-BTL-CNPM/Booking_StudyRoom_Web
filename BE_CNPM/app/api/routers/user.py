@@ -380,8 +380,13 @@ def check_in2( current_user: CurrentUser,
     if order.is_cancel:
         raise HTTPException(status_code=404, detail="You have already canceled this order")
     
-    used_order= create_order_room(session, order_id=data.order_id, user_id=user.id, date_checkin=datetime.now().time())
-    
+    used_order= create_used_room(session, 
+                                 order_id=data.order_id,
+                                   user_id=user.id,
+                                    room_id= order.room_id,
+                                    date= datetime.now().date(),
+                                    checkin=datetime.now().time())
+    update_state_order_room(session, order_id=data.order_id, isused=True)
     if not used_order:
         raise HTTPException(status_code=404, detail="Cannot check in")
     if not update_state_order_room(session, order_id=data.order_id, isused=True):
@@ -394,16 +399,17 @@ def check_in2( current_user: CurrentUser,
 
 @router.post("/checkout2", response_model=responseorder)
 def check_out2(current_user: CurrentUser,
-              session: SessionDep,
-              data: CheckOut2):
+              session: SessionDep):
     user = current_user
-    if not data.order_id:
-       raise HTTPException(status_code=404, detail="Please enter order_id")
-    used_room =update_used_room(session, used_room_id=data.order_id, user_id=user.id, checkout=datetime.now().time())
+    used_order= get_used_room_being_used_by_user_id(session, user.id)
+
+    if used_order is None:
+       raise HTTPException(status_code=404, detail="You have not checked in any room")
+    
+    used_room =update_used_room(session, used_room_id=used_order.id, user_id=user.id, checkout=datetime.now().time())
     if not used_room:
         raise HTTPException(status_code=404, detail="Cannot check out")
-    if not update_state_order_room(session, order_id=data.order_id, isused=False):
-        raise HTTPException(status_code=404, detail="Cannot check out")
+
     return {
         "msg": "Check out successfully",
         "data": used_room
