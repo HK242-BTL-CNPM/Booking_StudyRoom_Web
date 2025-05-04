@@ -37,20 +37,25 @@ function NotificationItem({
 }
 // --- Styled Components ---
 const PopupContainer = styled.div`
-  position: absolute;
-  top: 100%;
-  right: -14rem;
-  margin-top: 0.5rem;
+  position: fixed;
+  top: 5rem;
+  right: 0rem;
+  z-index: 9999;
+
   min-width: 320px;
-  max-width: 32rem; /* max-w-lg */
+  max-width: 32rem;
   background-color: white;
   border-radius: 0.75rem;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   border: 1px solid #e5e7eb;
-  z-index: 50;
   padding: 1rem;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 640px) {
+    right: 0.5rem;
+    min-width: 90vw;
+  }
 `;
 
 // (Các styled components khác: PopupTitle, PopupList, NoNotificationsText, SeeMoreButton giữ nguyên)
