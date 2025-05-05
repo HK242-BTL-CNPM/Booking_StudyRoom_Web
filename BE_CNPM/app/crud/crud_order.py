@@ -896,6 +896,74 @@ def get_used_room(session: Session, used_room_id: int) -> UsedRoom:
         raise HTTPException(status_code=404, detail="UsedRoom not found")
     return used_room
 
+# def update_used_room(
+#     session: Session,
+#     used_room_id: int,
+#     order_id: Optional[int] = None,
+#     user_id: Optional[int] = None,
+#     room_id: Optional[int] = None,
+#     date: Optional[date] = None,
+#     checkin: Optional[time] = None,
+#     checkout: Optional[time] = None
+# ) -> UsedRoom:
+#     """
+#     Update an existing UsedRoom's attributes.
+    
+#     Args:
+#         session (Session): The database session.
+#         used_room_id (int): The ID of the UsedRoom to update.
+#         order_id (Optional[int]): The new OrderRoom ID (optional).
+#         user_id (Optional[int]): The new user ID (optional).
+#         room_id (Optional[int]): The new room ID (optional).
+#         date (Optional[date]): The new date (optional).
+#         checkin (Optional[time]): The new check-in time (optional).
+#         checkout (Optional[time]): The new check-out time (optional).
+    
+#     Returns:
+#         UsedRoom: The updated UsedRoom object.
+    
+#     Raises:
+#         HTTPException: If the UsedRoom, OrderRoom, User, or Room is not found.
+#     """
+#     used_room = session.get(UsedRoom, used_room_id)
+#     if not used_room:
+#         raise HTTPException(status_code=404, detail="UsedRoom not found")
+
+#     if order_id is not None:
+#         order_room = session.get(OrderRoom, order_id)
+#         if not order_room:
+#             raise HTTPException(status_code=404, detail=f"OrderRoom with ID {order_id} not found")
+#         used_room.order_id = order_id
+
+#     if user_id is not None:
+#         user = session.get(User, user_id)
+#         if not user:
+#             raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
+#         used_room.user_id = user_id
+
+#     if room_id is not None:
+#         room = session.get(Room, room_id)
+#         if not room:
+#             raise HTTPException(status_code=404, detail=f"Room with ID {room_id} not found")
+#         used_room.room_id = room_id
+
+#     if date is not None:
+#         used_room.date = date
+#     if checkin is not None:
+#         used_room.checkin = checkin
+#     if checkout is not None:# Default checkout time
+#         used_room.checkout = checkout
+
+#     checkout_date= datetime.combine(used_room.date, used_room.checkout)
+#     checkin_date= datetime.combine(used_room.date, used_room.checkin)
+#     if checkout_date < checkin_date:
+#         raise HTTPException(status_code=400, detail="Check-in time must be before check-out time")
+    
+#     session.add(used_room)
+#     session.commit()
+#     session.refresh(used_room)
+#     return used_room
+#thay đổi thuộc tính is_cancel khi gọi checkout2
 def update_used_room(
     session: Session,
     used_room_id: int,
@@ -904,27 +972,9 @@ def update_used_room(
     room_id: Optional[int] = None,
     date: Optional[date] = None,
     checkin: Optional[time] = None,
-    checkout: Optional[time] = None
+    checkout: Optional[time] = None,
+    checkout_date: Optional[date] = None
 ) -> UsedRoom:
-    """
-    Update an existing UsedRoom's attributes.
-    
-    Args:
-        session (Session): The database session.
-        used_room_id (int): The ID of the UsedRoom to update.
-        order_id (Optional[int]): The new OrderRoom ID (optional).
-        user_id (Optional[int]): The new user ID (optional).
-        room_id (Optional[int]): The new room ID (optional).
-        date (Optional[date]): The new date (optional).
-        checkin (Optional[time]): The new check-in time (optional).
-        checkout (Optional[time]): The new check-out time (optional).
-    
-    Returns:
-        UsedRoom: The updated UsedRoom object.
-    
-    Raises:
-        HTTPException: If the UsedRoom, OrderRoom, User, or Room is not found.
-    """
     used_room = session.get(UsedRoom, used_room_id)
     if not used_room:
         raise HTTPException(status_code=404, detail="UsedRoom not found")
@@ -951,14 +1001,17 @@ def update_used_room(
         used_room.date = date
     if checkin is not None:
         used_room.checkin = checkin
-    if checkout is not None:# Default checkout time
+    if checkout is not None:
         used_room.checkout = checkout
 
-    checkout_date= datetime.combine(used_room.date, used_room.checkout)
-    checkin_date= datetime.combine(used_room.date, used_room.checkin)
-    if checkout_date < checkin_date:
-        raise HTTPException(status_code=400, detail="Check-in time must be before check-out time")
-    
+    effective_checkout_date = checkout_date if checkout_date is not None else used_room.date
+
+    if checkout is not None and used_room.checkin is not None:
+        checkin_datetime = datetime.combine(used_room.date, used_room.checkin)
+        checkout_datetime = datetime.combine(effective_checkout_date, used_room.checkout)
+        if checkout_datetime <= checkin_datetime:
+            raise HTTPException(status_code=400, detail="Check-in time must be before check-out time")
+
     session.add(used_room)
     session.commit()
     session.refresh(used_room)
@@ -1028,25 +1081,36 @@ def get_used_room_by_user_id(session: Session, user_id: int) -> List[UsedRoom]:
         raise HTTPException(status_code=404, detail="No UsedRooms found for this user")
     return used_rooms   
 
-def get_used_room_being_used_by_user_id(session: Session, user_id: int) ->UsedRoom:
-    '''
-    Return the UsedRoom being used by user_id
+# def get_used_room_being_used_by_user_id(session: Session, user_id: int) ->UsedRoom:
+#     '''
+#     Return the UsedRoom being used by user_id
 
-    Args:
-        session (Session): The database session.
-        user_id (int): The ID of the user.
-    Returns:
-        UsedRoom: The requested UsedRoom object.
-    Raise: 
-        HTTPException: If the UsedRoom is not found.
-    '''
+#     Args:
+#         session (Session): The database session.
+#         user_id (int): The ID of the user.
+#     Returns:
+#         UsedRoom: The requested UsedRoom object.
+#     Raise: 
+#         HTTPException: If the UsedRoom is not found.
+#     '''
 
-    used_rooms = session.exec(select(UsedRoom)
-                              .where(UsedRoom.user_id == user_id)
-                              .where(UsedRoom.checkout == time(23, 59, 59))).first()
-    if not used_rooms:
+#     used_rooms = session.exec(select(UsedRoom)
+#                               .where(UsedRoom.user_id == user_id)
+#                               .where(UsedRoom.checkout == time(23, 59, 59))).first()
+#     if not used_rooms:
+#         raise HTTPException(status_code=404, detail="No UsedRooms found for this user")
+#     return used_rooms
+
+def get_used_room_being_used_by_user_id(session: Session, user_id: int) -> UsedRoom:
+    used_room = session.exec(
+        select(UsedRoom)
+        .where(UsedRoom.user_id == user_id)
+        .where(UsedRoom.checkout == time(23, 59, 59))
+        .where(UsedRoom.date == date.today())  # Thêm điều kiện ngày
+    ).first()
+    if not used_room:
         raise HTTPException(status_code=404, detail="No UsedRooms found for this user")
-    return used_rooms
+    return used_room
     
 def check_using_room_by_used_room_id(session: Session, used_room_id: int) -> bool:
     """

@@ -103,6 +103,32 @@ interface RoomResponse {
   };
 }
 
+interface CheckinResponse {
+  msg: string;
+  data: {
+    id: number;
+    room_id: number;
+    user_id: number;
+    date: string;
+    checkin: string;
+    checkout: string;
+    order_id: number;
+  };
+}
+
+interface CheckoutResponse {
+  msg: string;
+  data: {
+    id: number;
+    room_id: number;
+    user_id: number;
+    date: string;
+    checkin: string;
+    checkout: string;
+    order_id: number;
+  };
+}
+
 export const fetchInitialData = async (): Promise<ApiResponse> => {
   try {
     const [userResponse, facilitiesResponse] = await Promise.all([
@@ -210,15 +236,35 @@ export const cancelRoom = async (orderId: number): Promise<CancelRoomResponse> =
   }
 };
 
+export const checkinRoom = async (orderId: number): Promise<CheckinResponse> => {
+  try {
+    const response = await api.post('/api/v1/user/checkin2', { order_id: orderId });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error checking in room:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const checkoutRoom = async (): Promise<CheckoutResponse> => {
+  try {
+    const response = await api.post('/api/v1/user/checkout2');
+    return response.data;
+  } catch (error: any) {
+    console.error('Error checking out room:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const changeUserStatus = async (username: string, isActive: boolean): Promise<any> => {
   try {
     console.log(`Sending request to /api/v1/admin/change_user_status/${username}?isActive=${isActive} with query params`);
     const response = await api.put(`/api/v1/admin/change_user_status/${username}`, null, {
       params: {
-        isActive: isActive, // Gửi isActive như query parameter
+        isActive: isActive,
       },
       headers: {
-        'Content-Type': 'application/json', // Đảm bảo header phù hợp
+        'Content-Type': 'application/json',
       },
     });
     console.log('Response from server:', response.data);

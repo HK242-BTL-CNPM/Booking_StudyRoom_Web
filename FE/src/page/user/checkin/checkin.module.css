@@ -1,0 +1,61 @@
+.paginationContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 0 8px;
+    font-size: 0.875rem;
+    color: #4b5563;
+  }
+  
+  .paginationButtons {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .paginationButton {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+  
+  .activePaginationButton {
+    background-color: #2563eb;
+    color: #fff;
+    border: 1px solid #2563eb;
+  }
+  
+  .disabledPaginationButton {
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+    color: #aaa;
+    border: 1px solid #ccc;
+  }
+  
+  .button {
+    padding: 8px 16px;
+    height: 40px;
+    width: 80px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .checkinButton {
+    background-color: rgb(37, 99, 235);
+  }
+  
+  .checkoutButton {
+    background-color: #10b981;
+  }
+  
+  .deleteButton {
+    background-color: #dc2626;
+  }

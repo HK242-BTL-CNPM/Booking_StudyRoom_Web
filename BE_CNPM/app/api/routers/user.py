@@ -391,7 +391,8 @@ def check_in2( current_user: CurrentUser,
                                     room_id= order.room_id,
                                     date= datetime.now().date(),
                                     checkin=datetime.now().time())
-    
+ 
+    update_state_order_room(session=session,order_id=order.id, isused=True, iscancel=False)
     if not used_order:
         raise HTTPException(status_code=404, detail="Cannot check in")
     if not update_state_order_room(session, order_id=data.order_id, isused=True, iscancel=False):
@@ -402,18 +403,58 @@ def check_in2( current_user: CurrentUser,
         "data": used_order
     }
 
+# @router.post("/checkout2", response_model=responseorder)
+# def check_out2(current_user: CurrentUser,
+#               session: SessionDep):
+#     user = current_user
+#     used_order= get_used_room_being_used_by_user_id(session, user.id)
+
+#     if used_order is None:
+#        raise HTTPException(status_code=404, detail="You have not checked in any room")
+    
+#     used_room =update_used_room(session, used_room_id=used_order.id, user_id=user.id, checkout=datetime.now().time())
+#     if not used_room:
+#         raise HTTPException(status_code=404, detail="Cannot check out")
+
+#     return {
+#         "msg": "Check out successfully",
+#         "data": used_room
+#     }
+#thay đổi thuộc tính is_cancel thành true trong bảng OrderRoom
 @router.post("/checkout2", response_model=responseorder)
-def check_out2(current_user: CurrentUser,
-              session: SessionDep):
+def check_out2(current_user: CurrentUser, session: SessionDep):
     user = current_user
-    used_order= get_used_room_being_used_by_user_id(session, user.id)
+    used_order = get_used_room_being_used_by_user_id(session, user.id)
 
     if used_order is None:
-       raise HTTPException(status_code=404, detail="You have not checked in any room")
-    
-    used_room =update_used_room(session, used_room_id=used_order.id, user_id=user.id, checkout=datetime.now().time())
-    if not used_room:
-        raise HTTPException(status_code=404, detail="Cannot check out")
+        raise HTTPException(status_code=404, detail="You have not checked in any room")
+
+    # Cập nhật thời gian checkout cho UsedRoom
+    try:
+        used_room = update_used_room(
+            session,
+            used_room_id=used_order.id,
+            user_id=user.id,
+            checkout=datetime.now().time(),
+            checkout_date=datetime.now().date()
+        )
+        if not used_room:
+            raise HTTPException(status_code=404, detail="Cannot check out")
+    except Exception as e:
+        print(f"Error in update_used_room: {str(e)}")  # Log lỗi
+        raise HTTPException(status_code=500, detail=f"Failed to update used room: {str(e)}")
+
+    # Cập nhật iscancel = true cho OrderRoom nếu có order_id
+    if used_room.order_id:
+        try:
+            order = get_order_room(session, used_room.order_id)
+            if not order:
+                raise HTTPException(status_code=404, detail="Cannot find associated order")
+            if not update_state_order_room(session, order_id=used_room.order_id, isused=order.is_used, iscancel=True):
+                raise HTTPException(status_code=404, detail="Cannot update order status")
+        except Exception as e:
+            print(f"Error updating OrderRoom: {str(e)}")  # Log lỗi
+            raise HTTPException(status_code=500, detail=f"Failed to update order status: {str(e)}")
 
     return {
         "msg": "Check out successfully",

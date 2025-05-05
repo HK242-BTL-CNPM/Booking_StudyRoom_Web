@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../AuthContext";
-import { getAllOrders, fetchRoomById, fetchBuildings, fetchRoomTypes, cancelRoom } from "../../../api/apiService";
+import { getAllOrders, fetchRoomById, fetchBuildings, fetchRoomTypes, cancelRoom, checkinRoom, checkoutRoom } from "../../../api/apiService";
 
 interface Room {
   id: number;
@@ -109,7 +109,7 @@ function Checkin() {
 
         // Ánh xạ dữ liệu thành định dạng Room, chỉ lấy các order có is_cancel = false
         const mappedRooms: Room[] = ordersWithRoomDetails
-          .filter((item) => !item.order.is_cancel) // Lọc bỏ các order có is_cancel = true
+          .filter((item) => !item.order.is_cancel)
           .map((item) => {
             const { order, roomDetails } = item;
 
@@ -133,7 +133,9 @@ function Checkin() {
             };
           });
 
-        setRoomList(mappedRooms);
+        // Lọc phòng: roomList (is_used: false, is_cancel: false), checkoutList (is_used: true, is_cancel: false)
+        setRoomList(mappedRooms.filter((room) => !orders.find((o) => o.id === room.id)?.is_used));
+        setCheckoutList(mappedRooms.filter((room) => orders.find((o) => o.id === room.id)?.is_used));
         setLoading(false);
       } catch (err: any) {
         setError("Không thể tải danh sách phòng: " + (err.message || "Lỗi không xác định"));
@@ -145,83 +147,102 @@ function Checkin() {
     fetchData();
   }, [token, facilities]);
 
-  const sortedRooms = roomList;
+  const handleCheckin = async (roomId: number) => {
+    try {
+      // Gọi API checkin2
+      const checkinResponse = await checkinRoom(roomId);
+      console.log("Checkin Response:", checkinResponse);
 
-  const totalPages = Math.ceil(sortedRooms.length / entriesPerPage);
-  const paginatedRooms = sortedRooms.slice(
-    (currentPage - 1) * entriesPerPage,
-    currentPage * entriesPerPage
-  );
+      // Cập nhật giao diện
+      const roomToCheckin = roomList.find((room) => room.id === roomId);
+      if (roomToCheckin) {
+        setCheckoutList([...checkoutList, roomToCheckin]);
+        setRoomList(roomList.filter((room) => room.id !== roomId));
+      }
+    } catch (err: any) {
+      setError("Không thể check-in: " + (err.message || "Lỗi không xác định"));
+      console.error("Error checking in:", err);
+    }
+  };
 
-  const handleDelete = async (roomId: number) => {
+  const handleDelete = async (roomId: number, isCheckout: boolean = false) => {
     try {
       if (!token) {
         throw new Error("No token available");
       }
 
-      // Gọi API cancelRoom
-      await cancelRoom(roomId);
+      if (isCheckout) {
+        // Gọi API checkout2
+        const checkoutResponse = await checkoutRoom();
+        console.log("Checkout Response:", checkoutResponse);
 
-      // Làm mới danh sách phòng sau khi hủy
-      const ordersResponse = await getAllOrders();
-      const orders: Order[] = ordersResponse.data || [];
+        // Cập nhật giao diện
+        setCheckoutList(checkoutList.filter((room) => room.id !== roomId));
+        navigate("/report");
+      } else {
+        // Gọi API cancelRoom để hủy đặt phòng
+        const cancelResponse = await cancelRoom(roomId);
+        console.log("Cancel Room Response:", cancelResponse);
 
-      const ordersWithRoomDetails = await Promise.all(
-        orders.map(async (order) => {
-          const roomDetails = await fetchRoomById(order.room_id);
-          return { order, roomDetails };
-        })
-      );
+        // Làm mới danh sách phòng sau khi hủy
+        const ordersResponse = await getAllOrders();
+        const orders: Order[] = ordersResponse.data || [];
 
-      const branchIds: number[] = [
-        ...new Set(ordersWithRoomDetails.map((item) => item.roomDetails.branch_id)),
-      ];
-      const buildingsData = await Promise.all(
-        branchIds.map(async (branchId: number) => {
-          const buildings = await fetchBuildings(branchId);
-          return buildings;
-        })
-      );
-      const allBuildings: Building[] = buildingsData.flat();
+        const ordersWithRoomDetails = await Promise.all(
+          orders.map(async (order) => {
+            const roomDetails = await fetchRoomById(order.room_id);
+            return { order, roomDetails };
+          })
+        );
 
-      const mappedRooms: Room[] = ordersWithRoomDetails
-        .filter((item) => !item.order.is_cancel) // Lọc bỏ các order có is_cancel = true
-        .map((item) => {
-          const { order, roomDetails } = item;
+        const branchIds: number[] = [
+          ...new Set(ordersWithRoomDetails.map((item) => item.roomDetails.branch_id)),
+        ];
+        const buildingsData = await Promise.all(
+          branchIds.map(async (branchId: number) => {
+            const buildings = await fetchBuildings(branchId);
+            return buildings;
+          })
+        );
+        const allBuildings: Building[] = buildingsData.flat();
 
-          const cs = facilities.find((f: typeof facilities[number]) => f.id === roomDetails.branch_id)?.branch_name || "N/A";
-          const toa = allBuildings.find((b: Building) => b.id === roomDetails.building_id)?.building_name || "N/A";
-          const roomType = roomTypes.find((rt: RoomType) => rt.id === roomDetails.type_id)?.type_name || "Không xác định";
-          const time = order.begin.slice(0, 5);
-          const date = order.date.split("-").reverse().join("/").slice(0, 5);
+        const mappedRooms: Room[] = ordersWithRoomDetails
+          .filter((item) => !item.order.is_cancel)
+          .map((item) => {
+            const { order, roomDetails } = item;
 
-          return {
-            id: order.id,
-            roomNumber: roomDetails.no_room || "N/A",
-            bookingStatus: order.is_cancel ? "Đã hủy" : "Đã đặt",
-            roomStatus: roomDetails.active ? "Hoạt động" : "Bị khóa",
-            cs,
-            toa,
-            roomType,
-            time,
-            date,
-          };
-        });
+            const cs = facilities.find((f: typeof facilities[number]) => f.id === roomDetails.branch_id)?.branch_name || "N/A";
+            const toa = allBuildings.find((b: Building) => b.id === roomDetails.building_id)?.building_name || "N/A";
+            const roomType = roomTypes.find((rt: RoomType) => rt.id === roomDetails.type_id)?.type_name || "Không xác định";
+            const time = order.begin.slice(0, 5);
+            const date = order.date.split("-").reverse().join("/").slice(0, 5);
 
-      setRoomList(mappedRooms);
-      setShowMessageDel(true);
-      setTimeout(() => setShowMessageDel(false), 2000);
+            return {
+              id: order.id,
+              roomNumber: roomDetails.no_room || "N/A",
+              bookingStatus: order.is_cancel ? "Đã hủy" : "Đã đặt",
+              roomStatus: roomDetails.active ? "Hoạt động" : "Bị khóa",
+              cs,
+              toa,
+              roomType,
+              time,
+              date,
+            };
+          });
+
+        setRoomList(mappedRooms.filter((room) => !orders.find((o) => o.id === room.id)?.is_used));
+        setCheckoutList(mappedRooms.filter((room) => orders.find((o) => o.id === room.id)?.is_used));
+        setShowMessageDel(true);
+        setTimeout(() => setShowMessageDel(false), 2000);
+      }
     } catch (err: any) {
-      setError("Không thể hủy đặt phòng: " + (err.message || "Lỗi không xác định"));
-      console.error("Error canceling room:", err);
-    }
-  };
-
-  const handleCheckin = (roomId: number) => {
-    const roomToCheckin = roomList.find((room) => room.id === roomId);
-    if (roomToCheckin) {
-      setCheckoutList([...checkoutList, roomToCheckin]);
-      setRoomList(roomList.filter((room) => room.id !== roomId));
+      setError(
+        isCheckout
+          ? "Không thể check-out: " + (err.message || "Lỗi không xác định")
+          : "Không thể hủy đặt phòng: " + (err.message || "Lỗi không xác định")
+      );
+      setLoading(false);
+      console.error(isCheckout ? "Error checking out:" : "Error canceling room:", err);
     }
   };
 
@@ -294,6 +315,13 @@ function Checkin() {
     </div>
   );
 
+  const sortedRooms = roomList;
+  const totalPages = Math.ceil(sortedRooms.length / entriesPerPage);
+  const paginatedRooms = sortedRooms.slice(
+    (currentPage - 1) * entriesPerPage,
+    currentPage * entriesPerPage
+  );
+
   if (loading) {
     return <div className="text-center py-4">Đang tải dữ liệu...</div>;
   }
@@ -318,7 +346,7 @@ function Checkin() {
                       key={room.id}
                       room={room}
                       onCheckin={handleCheckin}
-                      onDelete={handleDelete}
+                      onDelete={(id) => handleDelete(id, false)}
                     />
                   ))
                 ) : (
@@ -352,7 +380,7 @@ function Checkin() {
                     cursor: currentPage === 1 ? "not-allowed" : "pointer",
                   }}
                 >
-                  
+                  {"<"}
                 </button>
                 {Array.from({ length: totalPages }, (_, index) => (
                   <button
@@ -386,7 +414,7 @@ function Checkin() {
                       currentPage === totalPages ? "not-allowed" : "pointer",
                   }}
                 >
-                  
+                  {">"}
                 </button>
               </div>
               <div>
@@ -419,12 +447,7 @@ function Checkin() {
                       key={room.id}
                       room={room}
                       isCheckout
-                      onDelete={(id) => {
-                        setCheckoutList(
-                          checkoutList.filter((r) => r.id !== id)
-                        );
-                        navigate("/report");
-                      }}
+                      onDelete={(id) => handleDelete(id, true)}
                     />
                   ))
                 ) : (
