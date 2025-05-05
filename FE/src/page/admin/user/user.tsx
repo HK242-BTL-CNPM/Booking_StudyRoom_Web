@@ -200,7 +200,7 @@ function User() {
                       key={user.id}
                       className="grid grid-cols-8 gap-4 py-4 border-b last:border-b-0 items-center"
                     >
-                      <div className="text-center font-medium">ID {user.id}</div>
+                      <div className="text-center font-medium"> {user.id}</div>
                       <div className="text-left">{user.fullName}</div>
                       <div className="text-center">{user.MSSV}</div>
                       <div className="text-center col-span-2">{user.email}</div>

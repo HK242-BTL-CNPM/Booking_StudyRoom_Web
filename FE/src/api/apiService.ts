@@ -290,3 +290,21 @@ export const getAllRooms = async (params: {
     throw error.response?.data || error;
   }
 };
+
+// Thêm hàm gọi API getorrderbyfilter
+export const getOrdersByFilter = async (params: {
+  room_id?: number;
+  year: number;
+  date_start: number;
+  date_end: number;
+  month_start: number;
+  month_end: number;
+}): Promise<GetAllOrderResponse> => {
+  try {
+    const response = await api.get('/api/v1/admin/getorrderbyfilter', { params });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching orders by filter:', error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
