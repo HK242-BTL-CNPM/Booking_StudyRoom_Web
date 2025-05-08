@@ -1,169 +1,95 @@
-Booking StudyRoom Website
+# Booking StudyRoom Website
 
-Overview
+A web application designed to streamline the process of booking study rooms. Users can check room availability, view booking history, and report issues easily.
 
-Booking StudyRoom is a web application designed to streamline the process of booking study rooms. It allows users to check room availability, view booking history, and report issues. The project was developed by a team of 7, with contributions in front-end development, UI/UX design, and API integration.
+---
 
-Tech Stack
+## Tech Stack
 
+- **Front-end:** React.js, Tailwind CSS, Axios  
+- **Back-end:** FastAPI (Python)  
+- **Database:** SQL (e.g., PostgreSQL, MySQL)  
+- **Tools:** Figma, Postman  
 
+---
 
+## Prerequisites
 
+Before running the project, ensure the following are installed:
 
-Front-end: React.js, Tailwind CSS, Axios
+- [Node.js](https://nodejs.org/) (v16 or higher) for the front-end  
+- [Python](https://www.python.org/) (v3.8 or higher) for the back-end  
+- `pip` for Python package management  
+- A SQL database (PostgreSQL, MySQL, etc.) configured for the back-end  
 
+---
 
+## Installation and Setup
 
-Back-end: FastAPI (Python)
+### 1. Clone the Repository
 
+```bash
+git clone https://github.com/HK242-BTL-CNPM/Booking_StudyRoom_Web
+cd Booking_StudyRoom_Web
+```
 
+### 2. Back-end Setup (FastAPI)
 
-Database: SQL
-
-
-
-Tools: Figma, Postman
-
-Prerequisites
-
-Before running the project, ensure you have the following installed:
-
-
-
-
-
-Node.js (v16 or higher) for the front-end
-
-
-
-Python (v3.8 or higher) for the back-end
-
-
-
-pip for Python package management
-
-
-
-A SQL database (e.g., PostgreSQL, MySQL) configured for the back-end
-
-Installation and Setup
-
-
-
-
-
-Clone the repository:
-
-git clone https://github.com/HK242-BTL-CNPM.git](https://github.com/HK242-BTL-CNPM/Booking_StudyRoom_Web)
-cd HK242-BTL-CNPM
-
-
-
-Back-end Setup:
-
+```bash
 cd BE_CNPM
 pip install -r requirements.txt
 uvicorn app.main:app --reload
+```
 
+This starts the FastAPI server at [http://localhost:8000](http://localhost:8000) with auto-reload enabled.  
+Make sure your SQL database is properly configured in `app/main.py` or via a `.env` file.
 
+### 3. Front-end Setup (React.js)
 
-
-
-This starts the FastAPI server at http://localhost:8000 with auto-reload enabled.
-
-
-
-Ensure the SQL database is configured in app/main.py or a .env file.
-
-
-
-Front-end Setup:
-
+```bash
 cd FE
 npm install
 npm run dev
+```
 
+This starts the React development server, usually at [http://localhost:5173](http://localhost:5173)
 
+---
 
+## Project Structure
 
+```
+Booking_StudyRoom_Web/
+├── BE_CNPM/               # FastAPI back-end
+│   └── app/
+│       └── main.py        # Main application file
+├── FE/                    # React front-end
+│   └── src/               # Components, styles, and API integration
+```
 
-This starts the React development server, typically at http://localhost:5173.
+---
 
-Project Structure
+## Usage
 
+- Visit the front-end at [http://localhost:5173](http://localhost:5173)
+- Use [Postman](https://www.postman.com/) to test API endpoints at [http://localhost:8000](http://localhost:8000)
+  - (Refer to API documentation inside the `BE_CNPM` folder, if available.)
 
+### Key Features
 
+- Book study rooms
+- Check room availability
+- View booking history
+- Report issues
 
+---
 
-BE_CNPM/: Contains the FastAPI back-end code.
+## Contributions
 
+- **UI/UX Design:** Created mockups and prototypes using Figma  
+- **Front-end Development:** Built admin pages with React.js and Tailwind CSS  
+- **API Integration:** Tested and connected RESTful APIs using Postman and Axios  
 
+**Team Size:** 7 members
 
-
-
-app/main.py: Main application file for FastAPI.
-
-
-
-FE/: Contains the React front-end code.
-
-
-
-
-
-src/: Source files for React components, styles, and API integration.
-
-Usage
-
-
-
-
-
-Access the front-end at http://localhost:5173 to interact with the application.
-
-
-
-Use Postman to test API endpoints at http://localhost:8000 (refer to API documentation in the back-end folder, if available).
-
-
-
-Features include:
-
-
-
-
-
-Booking study rooms
-
-
-
-Checking room availability
-
-
-
-Viewing booking history
-
-
-
-Reporting issues
-
-Contributions
-
-
-
-
-
-UI/UX Design: Designed mockups and prototypes using Figma.
-
-
-
-Front-end Development: Built admin pages with React.js and Tailwind CSS.
-
-
-
-API Integration: Tested RESTful APIs with Postman and integrated them using Axios.
-
-
-
-Team Size: 7 members.
 
