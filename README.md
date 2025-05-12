@@ -2,6 +2,7 @@
 
 A web application designed to streamline the process of booking study rooms. Users can check room availability, view booking history, and report issues easily.
 
+ **Figma Design:** [View UI/UX Mockups](https://www.figma.com/design/FoXexKQkB99XCCvlaOL4r4/Booking_StudyRoom_Web?node-id=1-1990&t=35CgK5hFeGbuzpFp-1)
 ---
 
 ## Tech Stack
